@@ -1,0 +1,4 @@
+note <- sprintf("R package version %s", meta$Version)
+
+27.05.23 | V 0.1.0
+SARC has been created. Submitting to Bioconductor.
