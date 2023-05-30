@@ -1,12 +1,4 @@
----
-title: "README"
-output: html_document
-date: "2023-05-30"
----
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 # SARC
 
 ## Statistical Analysis on Regions with CNVs
