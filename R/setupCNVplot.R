@@ -47,8 +47,6 @@ setupCNVplot <- function(MA, namedgranges, covprepped){
 
   ns <- names(namedgranges)
 
-  if (isTRUE(list(NULL) %in% sps1)) {
-
     if (isTRUE(list(NULL) %in% sps1)) {
 
       s <- lapply(sps1, is.null)
@@ -57,7 +55,7 @@ setupCNVplot <- function(MA, namedgranges, covprepped){
 
       #communicate which samples should be removed if they were not associated with any genes
 
-      paste0(n, " should be removed as it may be too small to evaluate. Removing from further analysis. Please also remove from .bed file.")
+      print(paste0(n, " should be removed as it may be too small to evaluate. Removing from further analysis. Please also remove from .bed file."))
 
       sps1[n] <- NULL
 
@@ -68,8 +66,6 @@ setupCNVplot <- function(MA, namedgranges, covprepped){
       print("All CNVs are fine for further evaluation")
 
     }
-
-  }
 
   covprepped2 <- covprepped[ns]
 
