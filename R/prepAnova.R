@@ -2,9 +2,8 @@
 #'
 #' @description Function for annovaOnCNV.This function sets up samples for anova analysis. Can also be used as input for dunnet analysis.
 #'
-#' @param MA MultiAssayExperiment object used to store all information.
-#' @param bed Bed file containing CNVs which the user wishes to generate plots for. It is recommended that the most recently created bed file is used. Check print(MA) to see more bed files created by SARC.
-#' @param cov cov file from WES platform/ sequencer kit or if WGS regular intervals. Stored as a dataframe - genomic locations as rows and samples as columns.
+#' @param RE RaggedExperiment object used to store all information.
+#' @param cnv List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines. It is recommended that the most recently created cnv file is used. Check print(RE) to see more cnv files created by SARC.
 #' @param startlist List of start sites created from SARC::regionSet and stored as metadata.
 #' @param endlist List of end sites created from SARC::regionSet and stored as metadata.
 #'
@@ -13,24 +12,24 @@
 #' @importFrom reshape2 melt
 #'
 #' @examples
-#' data("test_bed")
+#' data("test_cnv")
 #' data("test_cov")
-#' SARC <- regionSet(bed = test_bed, cov = test_cov)
-#' SARC <- regionSplit(MA = SARC, bed = test_bed, cov = test_cov,
-#'                     startlist = metadata(SARC)[[1]],
-#'                     endlist = metadata(SARC)[[2]])
-#' SARC <- regionMean(MA = SARC, bed = test_bed, splitcov = metadata(SARC)[[3]])
-#' SARC <- regionQuantiles(MA = SARC, bed = experiments(SARC)[[1]],
-#'                        meancov = metadata(SARC)[[4]], q1=.15, q2=.85)
-#' SARC <- prepAnova(MA = SARC, bed = experiments(SARC)[[2]], cov = test_cov,
-#'                  startlist = metadata(SARC)[[1]], endlist = metadata(SARC)[[2]])
-prepAnova <- function(MA, bed, cov, startlist, endlist){
+#' SARC <- regionSet(cnv = test_cnv, cov = test_cov)
+#' SARC <- regionSplit(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[1]],
+#'                     startlist = metadata(SARC)[[2]],
+#'                     endlist = metadata(SARC)[[3]])
+#' SARC <- regionMean(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[1]],
+#'                    splitcov = metadata(SARC)[[4]])
+#' SARC <- regionQuantiles(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[2]],
+#'                       meancov = metadata(SARC)[[5]], q1=.1, q2=.9)
+#' SARC <- prepAnova(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[3]],
+#'                  startlist = metadata(SARC)[[2]],
+#'                  endlist = metadata(SARC)[[3]])
+prepAnova <- function(RE, cnv, startlist, endlist){
 
-  if (missing(MA)) stop('MA is missing. Add a MultiAssayExperiment object to store data efficiently.')
+  if (missing(RE)) stop('RE is missing. Add a RaggedExperiment object to store data efficiently.')
 
-  if (missing(bed)) stop('bed is missing. Add bed dataframe. Ideally the most recently created bed file should be used.')
-
-  if (missing(cov)) stop('cov is missing. Add a cov dataframe. This is a coverage file consisting of genomic locations and read depths for each sample in the WES/WGS cohort.')
+  if (missing(cnv)) stop('cnv is missing. Add cnv dataframe. Ideally the most recently created cnv file should be used.')
 
   if (missing(startlist)) stop('start is missing. Add a startlist site list. Should be stored as metadata after SARC::regionSet.')
 
@@ -39,6 +38,7 @@ prepAnova <- function(MA, bed, cov, startlist, endlist){
   #make sure start and end lists are numerical
 
   start.mini <- as.numeric(startlist)
+
   end.mini <- as.numeric(endlist)
 
   #apply prepBase on each start and end site in the start and end lists
@@ -50,24 +50,27 @@ prepAnova <- function(MA, bed, cov, startlist, endlist){
   starts <- res[1,]
   ends <- res[2,]
 
-  #make dataframes to apply anova for each CNV
+  #make Grange to apply anova for each CNV
 
   anova.cov <- list()
 
-  for (i in seq_len(nrow(bed))) {
+  for (i in seq_len(nrow(cnv))) {
 
-    anova.cov[[i]] <- cov[starts[i]:ends[i],]
+    s <- starts[i]
+    e <- ends[i]
+
+    anova.cov[[i]] <- RE@assays@unlistData[s:e]
 
     names(anova.cov)[i] <- paste0("CNV.", i)
 
   }
 
-  #store as a list in MA
+  #store as a list in RE
 
-  metadata(MA)[["ANOVACOV"]] <- anova.cov
+  metadata(RE)[["ANOVACOV"]] <- anova.cov
 
-  #retun a new MA object
+  #retun a new RE object
 
-  return(MA)
+  return(RE)
 
 }

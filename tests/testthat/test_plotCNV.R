@@ -1,23 +1,22 @@
 #test plotting
+#this is a quicker test to just check the plot is being created
 library(SARC)
 library(testthat)
-data("test_bed")
-#data("test_cov")
+data("test_cnv")
 
-test_bed <- test_bed[c(1),]
-
+test_cnv <- test_cnv[c(1),]
 SARC <- readRDS("test1.rds")
 
 #setuplot
-SARC <- setupCNVplot(MA = SARC, namedgranges = metadata(SARC)[[5]],
-                     covprepped = metadata(SARC)[[3]])
+SARC <- setupCNVplot(RE = SARC, namedgranges = metadata(SARC)[[6]],
+                     covprepped = metadata(SARC)[[4]])
 #expect dataframes
-expect_equal(class(metadata(SARC)[[6]][[1]]), "data.frame")
-
+expect_equal(class(metadata(SARC)[[7]][[1]]), "data.frame")
 names <- c("SAMPLE","READ","START","GENE","EXON","FEATURE")
-
-expect_equal(colnames(metadata(SARC)[[6]][[1]]), names)
+expect_equal(colnames(metadata(SARC)[[7]][[1]]), names)
 
 #plot
-p <- plotCNV(bed = test_bed, setup = metadata(SARC)[[6]], FilteredCNV = 1)
+p <- plotCNV(cnv = test_cnv, setup = metadata(SARC)[[7]], FilteredCNV = 1)
 expect_equal(class(p)[[1]], "gg")
+#check the title/ regions are the same
+expect_equal(p$labels$title, paste0(test_cnv$CHROM,":",test_cnv$START,":",test_cnv$END))

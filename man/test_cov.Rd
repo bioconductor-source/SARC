@@ -2,10 +2,10 @@
 \alias{test_cov}
 \docType{data}
 \title{
-test .cov file.
+test coverage file
 }
 \description{
-The cov/ coverage file can be generated using bcftools, samtools among other genomic tools. It uses the WES platform .bed file from the chemistry of the Illumina DNA Rapid test. The first column should be ID (same as rownames), Chromosome, Start, End and the rest of the columns represent the samples. Intergers will represent the number of reads from each samples .bam file.
+This file is a large matrix of raw read depth from whole exome sequencing BAM files. The first four columns are: ID, chromosome, start position and end position.Following on, each sample has its own column which gives an integer for each position of DNA found in the whole exome experiment. Samples are annoymised. Read depth has been normalised by total library sizes via RPM (reads per million) calculations.
 }
 \usage{data("test_cov")}
 \format{
@@ -15,37 +15,40 @@ The cov/ coverage file can be generated using bcftools, samtools among other gen
     \item{\code{CHROM}}{a factor with levels \code{chr1} \code{chr10} \code{chr11} \code{chr12} \code{chr13} \code{chr14} \code{chr15} \code{chr16} \code{chr17} \code{chr18} \code{chr19} \code{chr2} \code{chr20} \code{chr21} \code{chr22} \code{chr3} \code{chr4} \code{chr5} \code{chr6} \code{chr7} \code{chr8} \code{chr9} \code{chrM} \code{chrX} \code{chrY}}
     \item{\code{START}}{a numeric vector}
     \item{\code{END}}{a numeric vector}
-    \item{\code{Sample_616}}{a numeric vector}
-    \item{\code{Sample_617}}{a numeric vector}
-    \item{\code{Sample_618}}{a numeric vector}
-    \item{\code{Sample_619}}{a numeric vector}
-    \item{\code{Sample_620}}{a numeric vector}
-    \item{\code{Sample_621}}{a numeric vector}
-    \item{\code{Sample_622}}{a numeric vector}
-    \item{\code{Sample_623}}{a numeric vector}
-    \item{\code{Sample_624}}{a numeric vector}
-    \item{\code{Sample_625}}{a numeric vector}
-    \item{\code{Sample_626}}{a numeric vector}
-    \item{\code{Sample_627}}{a numeric vector}
-    \item{\code{Sample_628}}{a numeric vector}
-    \item{\code{Sample_629}}{a numeric vector}
-    \item{\code{Sample_630}}{a numeric vector}
-    \item{\code{Sample_635}}{a numeric vector}
-    \item{\code{Sample_636}}{a numeric vector}
-    \item{\code{Sample_637}}{a numeric vector}
-    \item{\code{Sample_638}}{a numeric vector}
-    \item{\code{Sample_639}}{a numeric vector}
+    \item{\code{SampleA}}{a numeric vector}
+    \item{\code{SampleB}}{a numeric vector}
+    \item{\code{SampleC}}{a numeric vector}
+    \item{\code{SampleD}}{a numeric vector}
+    \item{\code{SampleE}}{a numeric vector}
+    \item{\code{SampleF}}{a numeric vector}
+    \item{\code{SampleG}}{a numeric vector}
+    \item{\code{SampleH}}{a numeric vector}
+    \item{\code{SampleI}}{a numeric vector}
+    \item{\code{SampleJ}}{a numeric vector}
+    \item{\code{SampleK}}{a numeric vector}
+    \item{\code{SampleL}}{a numeric vector}
+    \item{\code{SampleM}}{a numeric vector}
+    \item{\code{SampleN}}{a numeric vector}
+    \item{\code{SampleO}}{a numeric vector}
+    \item{\code{SampleP}}{a numeric vector}
+    \item{\code{SampleQ}}{a numeric vector}
+    \item{\code{SampleR}}{a numeric vector}
+    \item{\code{SampleS}}{a numeric vector}
+    \item{\code{SampleT}}{a numeric vector}
   }
 }
 \details{
-Only chromosome 1 was kept to keep the test data small.
-Samples are annonymised patient samples used for CNV detection.
+Several annonymised whole exome sequencing samples had been converted to a bam file and had a read counting tool applied.Only values from chromosome 1 are present to save space and time in examples.
 }
-
+\source{
+This is annonmysed patient data from the Newcastle Mitochondrial Research group, from the Wellcome Center for Mitochondrial research, Newcastle Universiry, UK.
+}
+\references{
+Taylor, Robert W., et al. "Use of whole-exome sequencing to determine the genetic basis of multiple mitochondrial respiratory chain complex deficiencies." Jama 312.1 (2014): 68-77.
+}
 \value{
-A dataframe which represents a COV file. This is one of the most common input file types for CNV detection algorithms. This is generated from BAM files from WES/ WGS experiments. Regions of the genome have their read-depths/ coverage counted for each sample.
+Dataframe of normalised coverage from WES samples.
 }
-
 \examples{
 data(test_cov)
 ## maybe str(test_cov) ; plot(test_cov) ...

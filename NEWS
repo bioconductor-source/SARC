@@ -7,3 +7,10 @@ note <- sprintf("R package version %s", meta$Version)
 #Tests added
 #setupCNVPlot bug fixed
 #README.md file added
+
+#30.05.23 | V 0.99.01
+#RaggedExperiments used instead of MultiAssayExperiments
+#More thorough tests
+#removed bed files
+#added citation of data and data description for where the WES data is from
+#added extra sections in vignette to describe normalisation, how to get coverage from bam files and described mouse samples

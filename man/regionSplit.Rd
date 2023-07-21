@@ -4,14 +4,12 @@
 \alias{regionSplit}
 \title{regionSplit}
 \usage{
-regionSplit(MA, bed, cov, startlist, endlist)
+regionSplit(RE, cnv, startlist, endlist)
 }
 \arguments{
-\item{MA}{MultiAssayExperiment object used to store all information.}
+\item{RE}{RaggedExperiment object used to store all information.}
 
-\item{bed}{Bed file containing CNVs which the user wishes to generate plots for. It is recommended that the most recently created bed file is used. Check print(MA) to see more bed files created by SARC.}
-
-\item{cov}{cov file from WES platform/ sequencer kit or if WGS regular intervals. Stored as a dataframe - genomic locations as rows and samples as columns.}
+\item{cnv}{List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines. It is recommended that the most recently created cnv file is used. Check print(RE) to see more cnv files created by SARC.}
 
 \item{startlist}{List of start sites created from SARC::regionSet and stored as metadata.}
 
@@ -24,10 +22,10 @@ A list of dataframes - each one a smaller cov file.
 Splits the large cov file into multiple smaller cov files. Each one is specific for each CNV entry in the bam file.
 }
 \examples{
-data("test_bed")
+data("test_cnv")
 data("test_cov")
-SARC <- regionSet(bed = test_bed, cov = test_cov)
-SARC <- regionSplit(MA = SARC, bed = test_bed, cov = test_cov,
-                    startlist = metadata(SARC)[[1]],
-                    endlist = metadata(SARC)[[2]])
+SARC <- regionSet(cnv = test_cnv, cov = test_cov)
+SARC <- regionSplit(RE = SARC, cnv =  metadata(SARC)[['CNVlist']][[1]],
+                    startlist = metadata(SARC)[[2]],
+                    endlist = metadata(SARC)[[3]])
 }

@@ -12,6 +12,8 @@ setupPlotStep2fun <- function(x){
 
   #reshape the dataframe
 
+  x$i.strand <- x$ID <- NULL
+
   ml <-  reshape2::melt(x, id.vars = "LOC")
 
   #create new dataframes with needed information

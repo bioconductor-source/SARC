@@ -11,15 +11,15 @@ applyAnova <- function(df){
 
   if (missing(df)) stop('df is missing. Add dataframe from SARC:prepAnova. Should be stored as metadata.')
 
-  df$LOC <- paste0(df$CHROM, ":", df$START, "-", df$END)
+  df$LOC <- paste0(df$seqnames, ":", df$start, "-", df$end)
 
   #Remove unneeded columns
 
-  df <- df[5:(ncol(df))]
+  df <- df[7:(ncol(df))]
 
   #Reshape to perform the anova formula
 
-  y <- melt(df, id.vars = "LOC", variable.name = "SAMPLE", value.name = "READS")
+  y <- reshape2::melt(df, id.vars = "LOC", variable.name = "SAMPLE", value.name = "READS")
 
   #perform anova using the READS and SAMPLE in the formula
 
@@ -29,4 +29,6 @@ applyAnova <- function(df){
 
   n <- summary(anov)[[1]][,5][[1]]
 
+  return(n)
 }
+

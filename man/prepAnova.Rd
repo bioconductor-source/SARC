@@ -4,14 +4,12 @@
 \alias{prepAnova}
 \title{prepAnova}
 \usage{
-prepAnova(MA, bed, cov, startlist, endlist)
+prepAnova(RE, cnv, startlist, endlist)
 }
 \arguments{
-\item{MA}{MultiAssayExperiment object used to store all information.}
+\item{RE}{RaggedExperiment object used to store all information.}
 
-\item{bed}{Bed file containing CNVs which the user wishes to generate plots for. It is recommended that the most recently created bed file is used. Check print(MA) to see more bed files created by SARC.}
-
-\item{cov}{cov file from WES platform/ sequencer kit or if WGS regular intervals. Stored as a dataframe - genomic locations as rows and samples as columns.}
+\item{cnv}{List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines. It is recommended that the most recently created cnv file is used. Check print(RE) to see more cnv files created by SARC.}
 
 \item{startlist}{List of start sites created from SARC::regionSet and stored as metadata.}
 
@@ -24,15 +22,17 @@ Additional list of dataframes which will be needed to calculate anova for each r
 Function for annovaOnCNV.This function sets up samples for anova analysis. Can also be used as input for dunnet analysis.
 }
 \examples{
-data("test_bed")
+data("test_cnv")
 data("test_cov")
-SARC <- regionSet(bed = test_bed, cov = test_cov)
-SARC <- regionSplit(MA = SARC, bed = test_bed, cov = test_cov,
-                    startlist = metadata(SARC)[[1]],
-                    endlist = metadata(SARC)[[2]])
-SARC <- regionMean(MA = SARC, bed = test_bed, splitcov = metadata(SARC)[[3]])
-SARC <- regionQuantiles(MA = SARC, bed = experiments(SARC)[[1]],
-                       meancov = metadata(SARC)[[4]], q1=.15, q2=.85)
-SARC <- prepAnova(MA = SARC, bed = experiments(SARC)[[2]], cov = test_cov,
-                 startlist = metadata(SARC)[[1]], endlist = metadata(SARC)[[2]])
+SARC <- regionSet(cnv = test_cnv, cov = test_cov)
+SARC <- regionSplit(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[1]],
+                    startlist = metadata(SARC)[[2]],
+                    endlist = metadata(SARC)[[3]])
+SARC <- regionMean(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[1]],
+                   splitcov = metadata(SARC)[[4]])
+SARC <- regionQuantiles(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[2]],
+                      meancov = metadata(SARC)[[5]], q1=.1, q2=.9)
+SARC <- prepAnova(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[3]],
+                 startlist = metadata(SARC)[[2]],
+                 endlist = metadata(SARC)[[3]])
 }

@@ -4,14 +4,14 @@
 \alias{seeDist}
 \title{seeDist}
 \usage{
-seeDist(meanList, bed, sample, plotly = FALSE, colourCNV = "red", size = 2)
+seeDist(meanList, cnv, sample, plotly = FALSE, colourCNV = "red", size = 2)
 }
 \arguments{
 \item{meanList}{List of dataframes which show the ranked mean scores for each CNV. Stored in metadata after SARC::setDPlot.}
 
-\item{bed}{Bed file containing CNVs which the user wishes to generate plots for. It is recommended that the most recently created bed file is used. Check print(MA) to see more bed files created by SARC.}
+\item{cnv}{List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines. It is recommended that the most recently created cnv file is used. Check print(RE) to see more cnv files created by SARC.}
 
-\item{sample}{Which CNV/ row from the bed file should be checked. Default is 1.}
+\item{sample}{Which CNV/ row from the cnv file should be checked. Default is 1.}
 
 \item{plotly}{Should plotly be used - this could be useful when interested in seeing the samples at each point.}
 
@@ -26,16 +26,15 @@ A scatter graph which shows the mean score of read-depths for a particular regio
 Displays the distribution of mean scores from read depths from all the samples. This is a quick method of checking why some detected CNVs might be false positives. We expect true duplications to have very high read-depths and true deletions to have very low read-depths.
 }
 \examples{
-data("test_bed")
+data("test_cnv")
 data("test_cov")
-SARC <- regionSet(bed = test_bed, cov = test_cov)
-SARC <- regionSplit(MA = SARC, bed = test_bed, cov = test_cov,
-                    startlist = metadata(SARC)[[1]],
-                    endlist = metadata(SARC)[[2]])
-SARC <- regionMean(MA = SARC, bed = test_bed, splitcov = metadata(SARC)[[3]])
-SARC <- regionQuantiles(MA = SARC, bed = experiments(SARC)[[1]],
-                        meancov = metadata(SARC)[[3]], q1 =.1, q2 = .9)
-SARC <- setQDplot(MA = SARC, meancov = metadata(SARC)[[4]])
-p <- seeDist(meanList = metadata(SARC)[[7]], bed = experiments(SARC)[[2]],
+SARC <- regionSet(cnv = test_cnv, cov = test_cov)
+SARC <- regionSplit(RE = SARC, cnv = metadata(SARC)[[1]][[1]],
+                    startlist = metadata(SARC)[[2]],
+                    endlist = metadata(SARC)[[3]])
+SARC <- regionMean(RE = SARC, cnv = metadata(SARC)[[1]][[1]],
+                   splitcov = metadata(SARC)[[4]])
+SARC <- setQDplot(RE = SARC, meancov = metadata(SARC)[[5]])
+p <- seeDist(meanList = metadata(SARC)[[6]], cnv = metadata(SARC)[[1]][[2]],
  plotly=FALSE, sample=1)
 }

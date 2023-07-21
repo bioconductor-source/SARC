@@ -4,23 +4,24 @@
 \alias{regionSet}
 \title{regionSet}
 \usage{
-regionSet(bed, cov)
+regionSet(cnv, cov, col = "experiment")
 }
 \arguments{
-\item{bed}{CNV bed files stored as dataframes. Chromosomes, Start of CNV, End of CNV, Type of CNV and
-some other information can be kept here.}
+\item{cnv}{List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines. Additional columns such as BATCH and GENE can also be used for better plotting.}
 
 \item{cov}{cov file from WES platform/ sequencer kit or if WGS regular intervals. Stored
-as a dataframe - genomic locations as rows and samples as columns.}
+as a dataframe - genomic locations as rows and samples as columns. It is recommended to normalize Read Depth by library size for fairer comparisons.}
+
+\item{col}{colData - A string which is used in RaggedExperiment creation. Default is "experiment".}
 }
 \value{
-MultiAssayExperiment Object with two lists: Start sites and End sites.
+RaggedExperiment object with two lists: Start sites and End sites.The cov file will be stored as the main assay of the RE object, and a new list will appear in the metadata to contain all cnv dataframes.
 }
 \description{
-Stores .cov and .bed file into a multiassayexperiment object. Will use genomic locations from the .bed file to find the start and end points of the CNVs from the .cov file and store these as two lists.
+Stores .cov and .cnv file (BED inspired file) into a RaggedExperiment object. Will use genomic locations from the .cnv file to find the start and end points of the CNVs from the .cov file and store these as two lists. The assay of the RE object will store the cov file and a list of nested dataframes called "CNVlist" within the metadata will store all the cnv dataframes.
 }
 \examples{
-data("test_bed")
+data("test_cnv")
 data("test_cov")
-SARC <- regionSet(bed = test_bed, cov = test_cov)
+SARC <- regionSet(cnv = test_cnv, cov = test_cov)
 }

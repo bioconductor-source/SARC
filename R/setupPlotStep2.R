@@ -17,9 +17,15 @@ setupPlotStep2 <- function(covprepped, sps1, START = "START"){
 
   pl <- lapply(covprepped, function(x){
 
+    x <- as.data.frame(x)
+
+    names(x)[1:3] <- c("CHROM", "START", "END")
+
     y <- data.table(x)
 
     setkey(y, START)
+
+    return(y)
 
   })
 

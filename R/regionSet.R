@@ -1,34 +1,39 @@
 #' @title regionSet
 #'
-#' @description Stores .cov and .bed file into a multiassayexperiment object. Will use genomic locations from the .bed file to find the start and end points of the CNVs from the .cov file and store these as two lists.
+#' @description Stores .cov and .cnv file (BED inspired file) into a RaggedExperiment object. Will use genomic locations from the .cnv file to find the start and end points of the CNVs from the .cov file and store these as two lists. The assay of the RE object will store the cov file and a list of nested dataframes called "CNVlist" within the metadata will store all the cnv dataframes.
 #'
-#' @param bed CNV bed files stored as dataframes. Chromosomes, Start of CNV, End of CNV, Type of CNV and
-#' some other information can be kept here.
+#' @param cnv List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines. Additional columns such as BATCH and GENE can also be used for better plotting.
 #' @param cov cov file from WES platform/ sequencer kit or if WGS regular intervals. Stored
-#' as a dataframe - genomic locations as rows and samples as columns.
+#' as a dataframe - genomic locations as rows and samples as columns. It is recommended to normalize Read Depth by library size for fairer comparisons.
+#' @param col colData - A string which is used in RaggedExperiment creation. Default is "experiment".
 #'
-#' @return MultiAssayExperiment Object with two lists: Start sites and End sites.
+#' @return RaggedExperiment object with two lists: Start sites and End sites.The cov file will be stored as the main assay of the RE object, and a new list will appear in the metadata to contain all cnv dataframes.
 #'
-#' @import MultiAssayExperiment
+#' @import RaggedExperiment
+#' @import GenomicRanges
 #' @export
 #'
 #' @examples
-#' data("test_bed")
+#' data("test_cnv")
 #' data("test_cov")
-#' SARC <- regionSet(bed = test_bed, cov = test_cov)
-regionSet <- function(bed, cov){
+#' SARC <- regionSet(cnv = test_cnv, cov = test_cov)
+regionSet <- function(cnv, cov, col = "experiment"){
 
-  if (missing(bed)) stop('bed is missing. Add bed dataframe. Ideally the most recently created bed file should be used.')
+  if (missing(cnv)) stop('cnv is missing. Add cnv dataframe. Ideally the most recently created cnv file should be used.')
 
-  if (missing(cov)) stop('cov is missing. Add a cov dataframe. This is a coverage file consisting of genomic locations and read depths for each sample in the WES/WGS cohort.')
+  if (missing(cov)) stop('cov is missing. Add a cov dataframe. This is a coverage file consisting of genomic locations and read depths (ideally normalised by library size) for each sample in the WES/WGS cohort.')
 
-  #make sure cov is not factorized
+  #convert cov to a grange object and then a RaggedExperiment
 
-  cov$CHROM <- as.character(cov$CHROM)
+  gr <- makeGRangesFromDataFrame(cov, keep.extra.columns = TRUE)
 
-  #Create MA object and other vectors to be stored in MA
+  gr <- sortSeqlevels(gr)
 
-  MA <- MultiAssayExperiment()
+  gr <- sort(gr)
+
+  ragexp <- RaggedExperiment(colData = col, gr)
+
+  #create objects for storage
 
   cov.mini <- list()
 
@@ -36,46 +41,44 @@ regionSet <- function(bed, cov){
 
   end.mini <- vector()
 
-  for (i in seq_len(nrow(bed))) {
+  for (i in seq_len(nrow(cnv))) {
 
     #Break cov into chromosomes - for speed
 
-    cov.mini[[i]] <- cov[which(cov$CHROM==bed$CHROM[i]),]
+    cov.mini[[i]] <- ragexp@assays@unlistData[seqnames(ragexp@assays@unlistData) == cnv$CHROM[i]]
 
     #Make iteration objects
 
     c <- cov.mini[[i]]
 
-    s <- bed$START[i]
+    s <- cnv$START[i]
 
-    e <- bed$END[i]
+    e <- cnv$END[i]
 
     #Get ith START from cov
+    s.min <- which.min(abs(start(c@ranges)-s))
 
-    s.min <- which.min(abs(c$START-s))
-
-    start.mini[i] <- c$ID[s.min]
+    start.mini[i] <- s.min
 
     #Get ith END from cov
+    e.min <- which.min(abs(end(c@ranges)-e))
 
-    e.min <- which.min(abs(c$END-e))
-
-    end.mini[i] <- c$ID[e.min]
-
+    end.mini[i] <- e.min
   }
 
-  #store in MA
+  #create list to keep cnv dataframes
+  cnvlist <- list()
 
-  metadata(MA)[["REGIONSTART"]] <- as.numeric(start.mini)
+  cnvlist[["Original"]] <- cnv
 
-  metadata(MA)[["REGIONEND"]] <- as.numeric(end.mini)
+  metadata(ragexp)[["CNVlist"]] <- cnvlist
 
-  #clean up
+  #store start and end regions in RE
 
-  rm(s.min, s, e.min, e, i, start.mini, end.mini)
+  metadata(ragexp)[["REGIONSTART"]] <- as.numeric(start.mini)
 
-  #Return a new MA object
+  metadata(ragexp)[["REGIONEND"]] <- as.numeric(end.mini)
 
-  return(MA)
+  return(ragexp)
 
 }

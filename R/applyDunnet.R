@@ -12,23 +12,25 @@
 #' @import multtest
 applyDunnet <- function(preppedcov, control){
 
-  if (missing(preppedcov)) stop('preppedcov is missing. Add dataframe from SARC:prepAnova. Should be stored as metadata..')
+  if (missing(preppedcov)) stop('preppedcov is missing. Add dataframe from SARC:prepAnova. Should be stored as metadata.')
 
   if (missing(control)) stop('control is missing. Add string of sample which had the CNV in question identified in it.')
 
   df <- preppedcov
+
+  df <- as.data.frame(df)
 
   #simplify a catagorical column
 
   df$LOC <- paste0(df$CHROM, ":", df$START, "-", df$END)
 
   #remove unneeded columns from cov file
-  df <- df[5:(ncol(df))]
+  df <- df[7:(ncol(df))]
 
   #re-organise to have thre columns : CNV, sample, value(read depth)
-  y <- melt(df, id.vars = "LOC", variable.name = "SAMPLE", value.name = "READS")
+  y <- reshape2::melt(df, id.vars = "LOC", variable.name = "SAMPLE", value.name = "READS")
 
-  #use a specific sample (bed file) as the control to compare against each other sample
+  #use a specific sample (cnv file) as the control to compare against each other sample
   y$Sample <- relevel(y$SAMPLE, ref = control)
 
   #apply the dunnet test

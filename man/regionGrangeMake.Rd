@@ -4,10 +4,10 @@
 \alias{regionGrangeMake}
 \title{regionGrangeMake}
 \usage{
-regionGrangeMake(MA, covprepped, range = 10, gap = 10)
+regionGrangeMake(RE, covprepped, range = 10, gap = 10)
 }
 \arguments{
-\item{MA}{MultiAssayExperiment object used to store all information.}
+\item{RE}{RaggedExperiment object used to store all information.}
 
 \item{covprepped}{List of dataframes, each dataframe is small cov file which ranges the detected CNV. This should be the padded cov file created with SARC::plotCovPrep and will be in the matadata.}
 
@@ -22,14 +22,15 @@ List of Grange Objects, one for each CNV detected.
 Makes Grange objects for each region with a detected CNV.
 }
 \examples{
-data("test_bed")
+data("test_cnv")
+test_cnv <- test_cnv[c(1:3),]
 data("test_cov")
-SARC <- regionSet(bed = test_bed, cov = test_cov)
-SARC <- regionSplit(MA = SARC, bed = test_bed, cov = test_cov,
-                    startlist = metadata(SARC)[[1]],
-                    endlist = metadata(SARC)[[2]])
-SARC <- plotCovPrep(MA = SARC, bed = test_bed, cov = test_cov,
-                    startlist = metadata(SARC)[[1]],
-                    endlist = metadata(SARC)[[2]])
-SARC <- regionGrangeMake(MA = SARC, covprepped = metadata(SARC)[[4]])
+SARC <- regionSet(cnv = test_cnv, cov = test_cov)
+SARC <- regionSplit(RE = SARC, cnv =  metadata(SARC)[['CNVlist']][[1]],
+                    startlist = metadata(SARC)[[2]],
+                    endlist = metadata(SARC)[[3]])
+SARC <- plotCovPrep(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[1]],
+                    startlist = metadata(SARC)[[2]],
+                    endlist = metadata(SARC)[[3]])
+SARC <- regionGrangeMake(RE = SARC, covprepped = metadata(SARC)[[4]])
 }

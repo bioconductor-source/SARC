@@ -1,53 +1,64 @@
 #' plotCNV
 #'
-#' @description Plots of the region of the DNA from several samples where a CNV is detected. The sample with the detected CNV, from the bed file, will be highlighted in purple. Additional specificity such as gene of interest, or batch of WES/ WGS can be specified. This function is made to be easily looped for multiple CNVs. It is also made as a quick and more visually preferable alternative to looking for true CNVs visually.
+#' @description Plots of the region of the DNA from several samples where a CNV is detected. The sample with the detected CNV, from the cnv file, will be highlighted in purple. Additional specificity such as gene of interest, or batch of WES/ WGS can be specified. This function is made to be easily looped for multiple CNVs. It is also made as a quick and more visually preferable alternative to looking for true CNVs visually.
 #'
 #'
-#' @param bed CNV bed files stored as dataframes. Chromosomes, Start of CNV, End of CNV, Type of CNV and some other information can be kept here. It is recomended to use the most recently generated bed file. Check print(MA) to see if bed files from other anlyses have been generated.
-#' @param setup ist of dataframes which have been processed for plotting. This will be stored as metadata in the MA object after SARC::setupCNVPlot.
+#' @param cnv List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines. It is recomended to use the most recently generated cnv file. Check print(RE) to see if cnv files from other anlyses have been generated.
+#' @param setup ist of dataframes which have been processed for plotting. This will be stored as metadata in the RE object after SARC::setupCNVPlot.
 #' @param FilteredCNV Which CNV from the list of dataframes (setup) should be plotted. Can be automated within a for-loop. Default is 1.
-#' @param batch If WES/ WGS was performed in batches, users may wish to plot samples from different batches separately. In this case, a column called 'BATCH' should be found in the BED file. Different batches should be labelled with differentiating strings, and this string should be added to the batch parameter. Default is NULL.
+#' @param batch If WES/ WGS was performed in batches, users may wish to plot samples from different batches separately. In this case, a column called 'BATCH' should be found in the cnv file. Different batches should be labelled with differentiating strings, and this string should be added to the batch parameter. Default is NULL.
 #' @param nSamples Numbers of samples to be printed in the plots. Default is 10. Add an integer to represent how many subplots should be made. The higher the number, the more difficult the plot will be for viewing.
 #' @param gene String of a gene of interest. Only this gene will be printed. It must match standard gene symbols e.g. FCGR3A, P53. Only one string should be inputted at a time. The default is null.
-#' @param log Applies log normalisation to reads. This can be helpful in WES data, where reads can be quite disperse across a short region of DNA. Reccomended is 10, and default is NULL.
+#' @param log Applies log normalisation to reads. This can be helpful in WES data, where reads can be quite disperse across a short region of DNA. Recommended is 2, and default is NULL.
+#' @param logbase Base to log read depth by - default is 2.
 #'
 #' @return A grid plot showing the read-depths for a specific regions of the the genome. This region will contain one samples which will have had a CNV detected. Heat-plot like colouring will be used to visually show if the sample has a significant change at this region, in contrast to several other samples.
 #' @export
 #' @import ggplot2 RColorBrewer grid gridExtra gtable scales
 #'
 #' @examples
-#' data("test_bed")
-#' data("test_cov")
-#' test_bed <- test_bed[c(1),]
-#' SARC <- regionSet(bed = test_bed, cov = test_cov)
-#' SARC <- plotCovPrep(MA = SARC, bed = test_bed, cov = test_cov,
-#'                    startlist = metadata(SARC)[[1]],
-#'                    endlist = metadata(SARC)[[2]])
-#' SARC <- regionGrangeMake(MA = SARC, covprepped = metadata(SARC)[[3]])
+#' if (requireNamespace("TxDb.Hsapiens.UCSC.hg38.knownGene", quietly = TRUE)) {
+#' require("TxDb.Hsapiens.UCSC.hg38.knownGene")
+#' } else {}
 #'
-#' library(TxDb.Hsapiens.UCSC.hg38.knownGene)
-#' library(Homo.sapiens)
+#' if (requireNamespace("Homo.sapiens", quietly = TRUE)) {
+#' require("Homo.sapiens")
+#' } else {}
+#'
+#' data("test_cnv")
+#' test_cnv <- test_cnv[c(1:3),]
+#' data("test_cov")
+#' SARC <- regionSet(cnv = test_cnv, cov = test_cov)
+#' SARC <- regionSplit(RE = SARC, cnv =  metadata(SARC)[['CNVlist']][[1]],
+#'                     startlist = metadata(SARC)[[2]],
+#'                     endlist = metadata(SARC)[[3]])
+#' SARC <- plotCovPrep(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[1]],
+#'                     startlist = metadata(SARC)[[2]],
+#'                     endlist = metadata(SARC)[[3]])
+#' SARC <- regionGrangeMake(RE = SARC, covprepped = metadata(SARC)[[4]])
+#'
 #' TxDb(Homo.sapiens) <- TxDb.Hsapiens.UCSC.hg38.knownGene
 #' txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 #' tx <- transcriptsBy(Homo.sapiens, columns = "SYMBOL")
 #' txgene <- tx@unlistData
 #'
-#' SARC <- addExonsGenes(MA = SARC, covgranges = metadata(SARC)[[4]],
+#' SARC <- addExonsGenes(RE = SARC, covgranges = metadata(SARC)[[6]],
 #'                       txdb = txdb, txgene = txgene)
 #'
-#' SARC <- setupCNVplot(MA = SARC, namedgranges =  metadata(SARC)[[5]],
-#'                   covprepped = metadata(SARC)[[3]])
-#' p <- plotCNV(bed = test_bed, setup = metadata(SARC)[[6]], FilteredCNV=1)
-plotCNV <- function(bed, setup, FilteredCNV=1, batch=NULL,
-                    nSamples=NULL, gene=NULL, log=NULL){
+#' SARC <- setupCNVplot(RE = SARC, namedgranges =  metadata(SARC)[[7]],
+#'                   covprepped = metadata(SARC)[[4]])
+#' p <- plotCNV(cnv =  metadata(SARC)[['CNVlist']][[1]],
+#'              setup = metadata(SARC)[[8]], FilteredCNV=1)
+plotCNV <- function(cnv, setup, FilteredCNV=1, batch=NULL,
+                    nSamples=NULL, gene=NULL, log=NULL, logbase=2){
 
-  if (missing(bed)) stop('bed is missing. Add bed dataframe. Ideally the most recently created bed file should be used.')
+  if (missing(cnv)) stop('cnv is missing. Add cnv dataframe. Ideally the most recently created cnv file should be used.')
 
   if (missing(setup)) stop('setup is missing. Should be stored as metadata after SARC::setupCNVPlot.')
 
   EXON <- GENE <- START <- READ <- SAMPLE <- NULL
 
-  b <- bed
+  b <- cnv
 
   #extract specific sample
   sb <- b[FilteredCNV,]
@@ -123,7 +134,7 @@ plotCNV <- function(bed, setup, FilteredCNV=1, batch=NULL,
     df <- df
   } else if(is.null(log) == FALSE) {
     df$READ <- ifelse(df$READ==0, 1, df$READ)
-    df$READ <- log(df$READ, log)
+    df$READ <- log(df$READ, logbase)
     df$READ <- round(df$READ, 1)
   }
 

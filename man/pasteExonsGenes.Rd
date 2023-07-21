@@ -4,43 +4,54 @@
 \alias{pasteExonsGenes}
 \title{pasteExonsGenes}
 \usage{
-pasteExonsGenes(MA, setup, bed)
+pasteExonsGenes(RE, setup, cnv, nameofnewdf = "cnvExonsGenes")
 }
 \arguments{
-\item{MA}{MultiAssayExperiment object used to store all information.}
+\item{RE}{RaggedExperiment object used to store all information.}
 
-\item{setup}{List of dataframes which have been processed for plotting. This will be stored as metadata in the MA object after SARC::setupCNVPlot.}
+\item{setup}{List of dataframes which have been processed for plotting. This will be stored as metadata in the RE object after SARC::setupCNVPlot.}
 
-\item{bed}{Bed file containing CNVs which the user wishes to generate plots for. It is recommended that the most recently created bed file is used. Check print(MA) to see more bed files created by SARC.}
+\item{cnv}{cnv file containing CNVs which the user wishes to generate plots for. It is recommended that the most recently created cnv file is used. Check print(RE) to see more cnv files created by SARC.}
+
+\item{nameofnewdf}{Name of new dataframe to be saved in metadata(RE)[['CNVlist']]. Default is cnvExonsGenes.}
 }
 \value{
-A new bed file with an additional column which lists the genes and exons which the detected variant ranges.
+A new cnv file with an additional column which lists the genes and exons which the detected variant ranges.
 }
 \description{
-Add Genes and Exons to the bed file in order to show the range the detected CNV extends. This is useful information for clinicians/ diagnostic scientists when interpreting the variants. Note - if padding was performed during plotCovPrep step, the CNV range would be extended by the padding so extra exons may be included in these cases.
+Add Genes and Exons to the cnv file in order to show the range the detected CNV extends. This is useful information for clinicians/ diagnostic scientists when interpreting the variants. Note - if padding was performed during plotCovPrep step, the CNV range would be extended by the padding so extra exons may be included in these cases.
 }
 \examples{
-data("test_bed")
-data("test_cov")
-test_bed <- test_bed[c(1),]
-SARC <- regionSet(bed = test_bed, cov = test_cov)
-SARC <- plotCovPrep(MA = SARC, bed = test_bed, cov = test_cov,
-                   startlist = metadata(SARC)[[1]],
-                   endlist = metadata(SARC)[[2]])
-SARC <- regionGrangeMake(MA = SARC, covprepped = metadata(SARC)[[3]])
+if (requireNamespace("TxDb.Hsapiens.UCSC.hg38.knownGene", quietly = TRUE)) {
+require("TxDb.Hsapiens.UCSC.hg38.knownGene")
+} else {}
 
-library(TxDb.Hsapiens.UCSC.hg38.knownGene)
-library(Homo.sapiens)
+if (requireNamespace("Homo.sapiens", quietly = TRUE)) {
+require("Homo.sapiens")
+} else {}
+
+data("test_cnv")
+test_cnv <- test_cnv[c(1),]
+data("test_cov")
+SARC <- regionSet(cnv = test_cnv, cov = test_cov)
+SARC <- regionSplit(RE = SARC, cnv =  metadata(SARC)[['CNVlist']][[1]],
+                    startlist = metadata(SARC)[[2]],
+                    endlist = metadata(SARC)[[3]])
+SARC <- plotCovPrep(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[1]],
+                    startlist = metadata(SARC)[[2]],
+                    endlist = metadata(SARC)[[3]])
+SARC <- regionGrangeMake(RE = SARC, covprepped = metadata(SARC)[[4]])
+
 TxDb(Homo.sapiens) <- TxDb.Hsapiens.UCSC.hg38.knownGene
 txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 tx <- transcriptsBy(Homo.sapiens, columns = "SYMBOL")
 txgene <- tx@unlistData
 
-SARC <- addExonsGenes(MA = SARC, covgranges = metadata(SARC)[[4]],
+SARC <- addExonsGenes(RE = SARC, covgranges = metadata(SARC)[[6]],
                       txdb = txdb, txgene = txgene)
-SARC <- setupCNVplot(MA = SARC, namedgranges =  metadata(SARC)[[5]],
-                  covprepped = metadata(SARC)[[3]])
-SARC <- pasteExonsGenes(MA = SARC, setup =  metadata(SARC)[[6]],
-                       bed = test_bed)
+SARC <- setupCNVplot(RE = SARC, namedgranges =  metadata(SARC)[[7]],
+                  covprepped = metadata(SARC)[[4]])
+SARC <- pasteExonsGenes(RE = SARC, setup =  metadata(SARC)[[8]],
+                       cnv = metadata(SARC)[['CNVlist']][[1]])
 
 }

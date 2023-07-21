@@ -2,7 +2,7 @@
 #'
 #' @description Sets up dataframes for plotting the CNVs. If there are grange objects with no genes/ exons, it may be the CNVs are too small. These CNVs should be removed to not lead to errors.
 #'
-#' @param MA MultiAssayExperiment object used to store all information.
+#' @param RE RaggedExperiment object used to store all information.
 #' @param namedgranges List of grange objects, one for each CNV. These objects should have exons and genes, and will be in metadata after being created by SARC::addExonsGenes.
 #' @param covprepped List of dataframes, one for each CNV. This list should be in metadata after bring created by SARC::plotCovPrep.
 #'
@@ -10,30 +10,38 @@
 #' @export
 #'
 #' @examples
-#' data("test_bed")
-#' data("test_cov")
-#' test_bed <- test_bed[c(1),]
-#' SARC <- regionSet(bed = test_bed, cov = test_cov)
-#' SARC <- plotCovPrep(MA = SARC, bed = test_bed, cov = test_cov,
-#'                    startlist = metadata(SARC)[[1]],
-#'                    endlist = metadata(SARC)[[2]])
-#' SARC <- regionGrangeMake(MA = SARC, covprepped = metadata(SARC)[[3]])
+#' if (requireNamespace("TxDb.Hsapiens.UCSC.hg38.knownGene", quietly = TRUE)) {
+#' require("TxDb.Hsapiens.UCSC.hg38.knownGene")
+#' } else {}
 #'
-#' library(TxDb.Hsapiens.UCSC.hg38.knownGene)
-#' library(Homo.sapiens)
+#' if (requireNamespace("Homo.sapiens", quietly = TRUE)) {
+#' require("Homo.sapiens")
+#' } else {}
+#'
+#' data("test_cnv")
+#' test_cnv <- test_cnv[c(1),]
+#' data("test_cov")
+#' SARC <- regionSet(cnv = test_cnv, cov = test_cov)
+#' SARC <- regionSplit(RE = SARC, cnv =  metadata(SARC)[['CNVlist']][[1]],
+#'                     startlist = metadata(SARC)[[2]],
+#'                     endlist = metadata(SARC)[[3]])
+#' SARC <- plotCovPrep(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[1]],
+#'                     startlist = metadata(SARC)[[2]],
+#'                     endlist = metadata(SARC)[[3]])
+#' SARC <- regionGrangeMake(RE = SARC, covprepped = metadata(SARC)[[4]])
+#'
 #' TxDb(Homo.sapiens) <- TxDb.Hsapiens.UCSC.hg38.knownGene
 #' txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 #' tx <- transcriptsBy(Homo.sapiens, columns = "SYMBOL")
 #' txgene <- tx@unlistData
 #'
-#' SARC <- addExonsGenes(MA = SARC, covgranges = metadata(SARC)[[4]],
+#' SARC <- addExonsGenes(RE = SARC, covgranges = metadata(SARC)[[6]],
 #'                       txdb = txdb, txgene = txgene)
-#'
-#' SARC <- setupCNVplot(MA = SARC, namedgranges =  metadata(SARC)[[5]],
-#'                   covprepped = metadata(SARC)[[3]])
-setupCNVplot <- function(MA, namedgranges, covprepped){
+#' SARC <- setupCNVplot(RE = SARC, namedgranges =  metadata(SARC)[[7]],
+#'                   covprepped = metadata(SARC)[[4]])
+setupCNVplot <- function(RE, namedgranges, covprepped){
 
-  if (missing(MA)) stop('MA is missing. Add a MultiAssayExperiment object to store data efficiently.')
+  if (missing(RE)) stop('RE is missing. Add a RaggedExperiment object to store data efficiently.')
 
   if (missing(namedgranges)) stop('namedgranges is missing. Add a list of named grange objects for plotting. Should be created from SARC::addExonsGenes.')
 
@@ -47,25 +55,25 @@ setupCNVplot <- function(MA, namedgranges, covprepped){
 
   ns <- names(namedgranges)
 
-    if (isTRUE(list(NULL) %in% sps1)) {
+  if (isTRUE(list(NULL) %in% sps1)) {
 
-      s <- lapply(sps1, is.null)
+    s <- lapply(sps1, is.null)
 
-      n <- names(s[s==TRUE])
+    n <- names(s[s==TRUE])
 
-      #communicate which samples should be removed if they were not associated with any genes
+    #communicate which samples should be removed if they were not associated with any genes
 
-      print(paste0(n, " should be removed as it may be too small to evaluate. Removing from further analysis. Please also remove from .bed file."))
+    print(paste0(n, " should be removed as it may be too small to evaluate. Removing from further analysis. Please also remove from .cnv file."))
 
-      sps1[n] <- NULL
+    sps1[n] <- NULL
 
-      ns <- names(sps1)
+    ns <- names(sps1)
 
-    } else if (isFALSE(list(NULL) %in% sps1)) {
+  } else if (isFALSE(list(NULL) %in% sps1)) {
 
-      print("All CNVs are fine for further evaluation")
+    print("All CNVs are fine for further evaluation")
 
-    }
+  }
 
   covprepped2 <- covprepped[ns]
 
@@ -77,9 +85,9 @@ setupCNVplot <- function(MA, namedgranges, covprepped){
 
   #store as list
 
-  metadata(MA)[["CNVPLOTLIST"]] <- sps2
+  metadata(RE)[["CNVPLOTLIST"]] <- sps2
 
-  #return as new MA object
+  #return as new RE object
 
-  return(MA)
+  return(RE)
 }

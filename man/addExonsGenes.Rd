@@ -4,40 +4,46 @@
 \alias{addExonsGenes}
 \title{addExonsGenes}
 \usage{
-addExonsGenes(MA, covgranges, txdb, txgene)
+addExonsGenes(RE, covgranges, txdb, txgene)
 }
 \arguments{
-\item{MA}{MultiAssayExperiment object used to store all information.}
+\item{RE}{RaggedExperiment object used to store all information.}
 
-\item{covgranges}{List of grange objects created by the SARC::regionGrangeMake function. This should be found in the metadata of the MA object.}
+\item{covgranges}{List of grange objects created by the SARC::regionGrangeMake function. This should be found in the metadata of the RE object.}
 
 \item{txdb}{Loaded txDB object e.g. TxDb.Hsapiens.UCSC.hg38.knownGene. Standard usage from the GenomicFeatures tutorial https://kasperdanielhansen.github.io/genbioconductor/html/GenomicFeatures.html.}
 
 \item{txgene}{List of genes and exons associated with each genomic region of interest. Requires specific species package to make e.g. Homo.sapiens for human samples.}
 }
 \value{
-A list of grange objects with exons and genes added. One grange object for each detected CNV. Will be stored in the MA object provided as metadata.
+A list of grange objects with exons and genes added. One grange object for each detected CNV. Will be stored in the RE object provided as metadata.
 }
 \description{
-For the length of the CNV (+padding, if this was done), exons and gene symbol information will be attached in each Grange object.
+For the length of the CNV (+padding, if this was done), exons and gene symbol inforREtion will be attached in each Grange object.
 }
 \examples{
-data("test_bed")
-data("test_cov")
-test_bed <- test_bed[c(1),]
-SARC <- regionSet(bed = test_bed, cov = test_cov)
-SARC <- plotCovPrep(MA = SARC, bed = test_bed, cov = test_cov,
-                   startlist = metadata(SARC)[[1]],
-                   endlist = metadata(SARC)[[2]])
-SARC <- regionGrangeMake(MA = SARC, covprepped = metadata(SARC)[[3]])
+if (requireNamespace("TxDb.Hsapiens.UCSC.hg38.knownGene", quietly = TRUE)) {
+require("TxDb.Hsapiens.UCSC.hg38.knownGene")
+} else {}
 
-library(TxDb.Hsapiens.UCSC.hg38.knownGene)
-library(Homo.sapiens)
+if (requireNamespace("Homo.sapiens", quietly = TRUE)) {
+require("Homo.sapiens")
+} else {}
+
+data("test_cnv")
+test_cnv <- test_cnv[c(1),]
+data("test_cov")
+test_cnv <- test_cnv[c(1),]
+SARC <- regionSet(cnv = test_cnv, cov = test_cov)
+SARC <- plotCovPrep(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[1]],
+                   startlist = metadata(SARC)[[2]],
+                   endlist = metadata(SARC)[[3]])
+SARC <- regionGrangeMake(RE = SARC, covprepped = metadata(SARC)[[4]])
+
 TxDb(Homo.sapiens) <- TxDb.Hsapiens.UCSC.hg38.knownGene
 txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 tx <- transcriptsBy(Homo.sapiens, columns = "SYMBOL")
 txgene <- tx@unlistData
-
-SARC <- addExonsGenes(MA = SARC, covgranges = metadata(SARC)[[4]],
+SARC <- addExonsGenes(RE = SARC, covgranges = metadata(SARC)[[5]],
                       txdb = txdb, txgene = txgene)
 }

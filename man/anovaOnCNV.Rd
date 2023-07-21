@@ -4,30 +4,32 @@
 \alias{anovaOnCNV}
 \title{anovaOnCNV}
 \usage{
-anovaOnCNV(MA, bed, anovacov)
+anovaOnCNV(RE, cnv, anovacov, nameofnewdf = "CNVanova")
 }
 \arguments{
-\item{MA}{MultiAssayExperiment object used to store all information.}
+\item{RE}{RaggedExperiment object used to store all information.}
 
-\item{bed}{CNV bed files stored as dataframes. Chromosomes, Start of CNV, End of CNV, Type of CNV and some other information can be kept here. It is recomended to use the most recently generated bed file. Check print(MA) to see if bed files from other anlyses have been generated.}
+\item{cnv}{List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines.}
 
 \item{anovacov}{List of dataframes which contain the required information to perform anova for each region with a detected CNV. Generated from prepAnova, and stored as metadata.}
+
+\item{nameofnewdf}{Name of new dataframe to be saved in metadata(RE)[['CNVlist']]. Default is CNVanova.}
 }
 \value{
-A new bed file with an additional column for the p-value from anova. Will be stored as an experiment in the MA object.
+A new cnv dataframe with an additional column for the p-value from anova. Will be stored as an experiment in the RE object.
 }
 \description{
-Apply anova on the CNV data. For each CNV listed in the input bed file, the read-depths will be used to calculate if this region of the DNA, in this sample, is significantly different from other samples in the cohort of samples, at this same region.
+Apply anova on the CNV data. For each CNV listed in the input cnv file, the read-depths will be used to calculate if this region of the DNA, in this sample, is significantly different from other samples in the cohort of samples, at this same region.
 }
 \examples{
-data("test_bed")
+data("test_cnv")
 data("test_cov")
-SARC <- regionSet(bed = test_bed, cov = test_cov)
-SARC <- regionSplit(MA = SARC, bed = test_bed, cov = test_cov,
-                    startlist = metadata(SARC)[[1]],
-                    endlist = metadata(SARC)[[2]])
-SARC <- prepAnova(MA = SARC, bed = test_bed, cov = test_cov,
-                 start = metadata(SARC)[[1]], end = metadata(SARC)[[2]])
-SARC <- anovaOnCNV(MA = SARC, bed = test_bed,
-                   anovacov = metadata(SARC)[[3]])
+SARC <- regionSet(cnv = test_cnv, cov = test_cov)
+SARC <- regionSplit(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[1]],
+                    startlist = metadata(SARC)[[2]],
+                    endlist = metadata(SARC)[[3]])
+SARC <- prepAnova(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[1]],
+                 start = metadata(SARC)[[2]], end = metadata(SARC)[[3]])
+SARC <- anovaOnCNV(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[1]],
+                   anovacov = metadata(SARC)[[4]])
 }

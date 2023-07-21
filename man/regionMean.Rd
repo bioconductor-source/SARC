@@ -4,28 +4,31 @@
 \alias{regionMean}
 \title{regionMean}
 \usage{
-regionMean(MA, bed, splitcov)
+regionMean(RE, cnv, splitcov, nameofnewdf = "CNVmeans")
 }
 \arguments{
-\item{MA}{MultiAssayExperiment object used to store all information.}
+\item{RE}{RaggedExperiment object used to store all information.}
 
-\item{bed}{CNV bed files stored as dataframes. Chromosomes, Start of CNV, End of CNV, Type of CNV and some other information can be kept here. It is recomended to use the most recently generated bed file. Check print(MA) to see if bed files from other anlyses have been generated.}
+\item{cnv}{List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines. It is recomended to use the most recently generated cnv file. Check print(RE) to see if cnv files from other anlyses have been generated.}
 
 \item{splitcov}{List of small .cov dataframes. Would be stored as metadata after SARC::regionSplit.}
+
+\item{nameofnewdf}{Name of new dataframe to be saved in metadata(RE)[['CNVlist']]. Default is CNVmeans.}
 }
 \value{
-A new bed file with an additional column representing the meanScores. A new list of dataframes which contains the meanscores.
+A new cnv file with an additional column representing the meanScores. A new list of dataframes which contains the meanscores.
 }
 \description{
 Function to calculate MeanScores for each region where a CNV has been detected. Dependent of sequencing quality and WES/WGS input, the estimated MeanScores for CNV types are generally: HOMOZYGOUS DELETION 0-0.3, HETEROZYGOUS DELETION 0.3-0.7, HETEROZYGOUS DUPLICATION 1.3-1.8 HOMOZYGOUS DUPLICATION >1.8.
 }
 \examples{
-data("test_bed")
+data("test_cnv")
 data("test_cov")
-SARC <- regionSet(bed = test_bed, cov = test_cov)
-SARC <- regionSplit(MA = SARC, bed = test_bed, cov = test_cov,
-                    startlist = metadata(SARC)[[1]],
-                    endlist = metadata(SARC)[[2]])
-SARC <- regionMean(MA = SARC, bed = test_bed, splitcov = metadata(SARC)[[3]])
+SARC <- regionSet(cnv = test_cnv, cov = test_cov)
+SARC <- regionSplit(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[1]],
+                    startlist = metadata(SARC)[[2]],
+                    endlist = metadata(SARC)[[3]])
+SARC <- regionMean(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[1]],
+                   splitcov = metadata(SARC)[[4]])
 
 }

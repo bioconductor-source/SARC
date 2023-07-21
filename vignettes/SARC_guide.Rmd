@@ -1,5 +1,5 @@
 ---
-title: "SARC_guide"
+title: "Tutorial of the SARC R Package. Flagging the confidence of CNVs from WES/ WGS cohorts."
 output:
         rmarkdown::html_document: 
                 keep_tex: true
@@ -37,11 +37,13 @@ detected from CNV detection pipelines from NGS data. CNV detection pipelines fro
 WES and (to a lesser extent) WGS, lead to high numbers of false-positives.
 
 The SARC package aims to flag high confidence and low confidence CNVs from such detection pipelines. This would aid in patient diagnostics and clinical work. 
-Uniquely, the SARC package only requires a coverage file created from many BAM files
-from WES/ WGS, and a bed file which lists the CNVs detected from detection 
-pipelines.
+Uniquely, the SARC package only requires a `coverage`/`cov` file and an `cnv` file. Both files should ideally be loaded as `data.frames`. 
 
-### **This is not a detection tool - it is a downsteam ratification tool for use AFTER a CNV detection pipeline!**
+The `cov` file can be created from many BAM files from WES/ WGS, and the read depth coverage of each sample should be normalized by library size of the sample prior to processing. The end of the vignette will point to how to perform read coverage reading and normalisation with examples.
+
+The `cnv` file is in many ways similiar to a standard CNV `BED` file - as it serves as a list of CNVs identified in the samples. Unlike a traditional `BED` file, the `cnv` file should contain additional columns such as CNV value, type of CNV, genes and batch of data. Additionally, the column names of the `cnv` file should ideally include: SAMPLE, CHROM, START, END, TYPE, VALUE. The order of the columns is not necessary. Additional columns such as TOOL, BATCH and GENE can enhance plotting.
+
+### **This is not a detection tool - it is a downstream ratification tool for use AFTER a CNV detection pipeline!**
 
 ```{r Load library, echo=TRUE, message=FALSE, warning=FALSE}
 #INSTALL BiocManager::install("SARC")
@@ -56,30 +58,26 @@ library(kableExtra)
 ```
 
 ## Data set-up
-The bed file should contain generic information at the minimum. Sample names (**SAMPLE**),
+The cnv file should contain generic information at the minimum. Sample names (**SAMPLE**),
 Chromosome (*"CHROM"*), Start site (*"START"*), End sit (*"END"*), Deletion or Duplication 
 (*"TYPE"*) and CNV value (*"VALUE"*) are required for the tool 
-to function. Column names should be in all caps and match the names of the test_bed
+to function. Column names should be in all caps and match the names of the test_cnv
 example below. 
 
 START, END  and VALUE should be integers!
-```{r test_bed, echo=TRUE}
-data("test_bed")
+```{r test_cnv, echo=TRUE}
+data("test_cnv")
 #For speed just use a few detected CNVs
-test_bed <- test_bed[1:3,]
-head(test_bed) %>%
+test_cnv <- test_cnv[1:3,]
+head(test_cnv) %>%
   kable %>%
   kable_styling("striped", full_width=FALSE) %>%
   scroll_box(width = "800px", height = "200px")
 ```
 
-The cov file should comprise of coverage from BAM files. These can be retrieved using
-SAMTOOLS or BCFTOOLs. These would not normally be normalised by coverage as this
-could scew variants. Additionally, it is good practice to separate cov files by the 
-technology used to sequence the FASTQ files.
+The cov file should comprise of coverage from normalised BAM files. Additionally, it is good practice to separate cov files by the technology used to sequence the FASTQ files.
 
-Importantly, there will be four columns before the samples - ID, Chromosome, Start and End. ID, Start and End should be intagers. The rest of the column names will be SampleID
-names - and these should match the samples names found in the bed file.
+Importantly, there will be four columns before the samples - ID, Chromosome, Start and End. ID, Start and End should be integers. The rest of the column names will be the names of the samples - and these should match the samples names found in the cnv file.
 
 ```{r test_cov, echo=TRUE}
 data("test_cov")
@@ -89,35 +87,34 @@ head(test_cov[, 1:10]) %>%
   scroll_box(width = "800px", height = "200px")
 ```
 
-**All samples in the bed file should be found in the cov file.** You may have samples in
-the cov file that are not found in the bed file.
+**All samples in the cnv file should be found in the cov file.** But you can have samples in the cov file that are not found in the cnv file.
 
-The SARC package relies on MultiAssayExperiment objects to store dataframes as
-experiments and lists and granges as metadata.
+The SARC package relies on `RaggedExperiments` objects to store the `cov` file as its assay and will store lists of `dataframes` and `Grange` objects within `metadata`. The `SARC` tool will generate more `cnv` dataframes with additional stats for each CNV in the list of CNVs. These `dataframes` will be stored within the first list stored in the `metadata`. 
+
+For cohorts with multiple coverage files (from multiple sequening platforms or meta-analyses studies), we recommend creating multiple `RaggedExperiments` objects, rather than combining them all into one.
 
 ```{r pressure, echo=TRUE}
 #Create a start site and end site for each CNV detected
-SARC <- regionSet(bed = test_bed, test_cov)
+SARC <- regionSet(cnv = test_cnv, test_cov)
 
 #Create smaller coverages for each CNV
-SARC <- regionSplit(MA = SARC, #the multiassayexperiment object we made
-                    bed = test_bed, 
-                    cov = test_cov, 
-                    startlist = metadata(SARC)[[1]], #list of start sites, per CNV
-                    endlist = metadata(SARC)[[2]]) #list of end sites, per CNV
+SARC <- regionSplit(RE = SARC, #the multiassayexperiment object we made
+                    cnv = metadata(SARC)[['CNVlist']][[1]], 
+                    startlist = metadata(SARC)[[2]], #list of start sites, per CNV
+                    endlist = metadata(SARC)[[3]]) #list of end sites, per CNV
 ```
 
 ## Statistical analysis
 
 First we use mean scores to check if the mean reads at this region matches the
-CNV values from a CNV detection tool. This will make a new bed file which will
+CNV values from a CNV detection tool. This will make a new cnv file which will
 be stored in the MAE object.
 
 ```{r means, echo=TRUE}
 #Calculate the mean read coverage
-SARC <- regionMean(MA = SARC, 
-                   bed = test_bed, 
-                   splitcov =  metadata(SARC)[[3]]) #list of cnv specific coverages
+SARC <- regionMean(RE = SARC, 
+                   cnv = test_cnv, 
+                   splitcov =  metadata(SARC)[[4]]) #list of cnv specific coverages
 ```
 
 We then calculate the quantile distributions. We assume a true duplication will be
@@ -127,9 +124,9 @@ in the COV file - the thresholds should be altered.
 
 ```{r qd, echo=TRUE}
 #Calculate the distribution of the mean reads
-SARC <- regionQuantiles(MA = SARC, 
-                        bed = experiments(SARC)[[1]], #new bed file
-                        meancov = metadata(SARC)[[4]], #list of cnv specific coverages + means
+SARC <- regionQuantiles(RE = SARC, 
+                        cnv = metadata(SARC)[['CNVlist']][[2]], #new cnv file
+                        meancov = metadata(SARC)[[5]], #list of cnv specific coverages + means
                         q1 = 0.1, #lower threshold
                         q2 = 0.9) #upper threshold
 ```
@@ -138,12 +135,16 @@ Anova can then be used to identify if a region with a suspected CNV has a signif
 
 ```{r anova, echo=TRUE}
 #Calculate rarity of each suspected CNV - in contrast to other samples
-SARC <- prepAnova(start = metadata(SARC)[[1]], end = metadata(SARC)[[2]], MA = SARC, 
-                 bed = experiments(SARC)[[2]], cov = test_cov)
-SARC <- anovaOnCNV(MA = SARC, bed = experiments(SARC)[[2]], 
-                  anovacov = metadata(SARC)[[7]])
+SARC <- prepAnova(RE = SARC, 
+                  start = metadata(SARC)[[2]], 
+                  end = metadata(SARC)[[3]], 
+                  cnv = metadata(SARC)[['CNVlist']][[3]]) #newest cnv dataframe
 
-head(experiments(SARC)[[3]]) %>%
+SARC <- anovaOnCNV(RE = SARC, 
+                   cnv = metadata(SARC)[['CNVlist']][[3]], 
+                   anovacov = metadata(SARC)[[8]])
+
+head(metadata(SARC)[['CNVlist']][[4]]) %>%
   kable %>%
   kable_styling("striped", full_width=FALSE) %>%
   scroll_box(width = "800px", height = "200px")
@@ -154,49 +155,53 @@ head(experiments(SARC)[[3]]) %>%
 A major complaint of CNV analysis by diagnostic staff is the over-reliance on the Integrative Genome Browser (IGV). While a great tool, it can be a tedious task to search many hundreds of samples manually. The SARC package provides an alternative (but not a complete substitute) to visualize which genes and exons are being (or not being) effected by a CNV. This is also a good way of visualizing the false-positives quickly, without using IGV.
 
 ```{r set up plot, echo=TRUE, message=FALSE, warning=FALSE}
-library(TxDb.Hsapiens.UCSC.hg38.knownGene)
-library(Homo.sapiens) # load genome specific libraries from BioConductor
 #prepare new objects for the CNV plots to work
+require(TxDb.Hsapiens.UCSC.hg38.knownGene)
+require(Homo.sapiens) #load genome specific libraries from BioConductor
 TxDb(Homo.sapiens) <- TxDb.Hsapiens.UCSC.hg38.knownGene
 txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 tx <- transcriptsBy(Homo.sapiens, columns = "SYMBOL")
 txgene <- tx@unlistData
 
-SARC <- plotCovPrep(MA = SARC, bed = experiments(SARC)[[3]], cov = test_cov,
-                    startlist = metadata(SARC)[[1]],
-                    endlist = metadata(SARC)[[2]],
+SARC <- plotCovPrep(RE = SARC,
+                    cnv = metadata(SARC)[['CNVlist']][[4]], #newest cnv dataframe
+                    startlist = metadata(SARC)[[2]],
+                    endlist = metadata(SARC)[[3]],
                     n1 = 0, #left-padding
                     n2 = 0) #right-padding
 
-SARC <- regionGrangeMake(MA = SARC, 
-                         covprepped = metadata(SARC)[[8]])
+SARC <- regionGrangeMake(RE = SARC, 
+                         covprepped = metadata(SARC)[[9]])
 
-SARC <- addExonsGenes(MA = SARC, 
-                      covgranges = metadata(SARC)[[9]], #list of grange objects - one for each detected CNV
+SARC <- addExonsGenes(RE = SARC, 
+                      covgranges = metadata(SARC)[[10]], #list of grange objects - one for each detected CNV
                       txdb = txdb, #Species specific database
                       txgene = txgene) #genes/ exons from the database
 
-SARC <- setupCNVplot(MA = SARC, namedgranges =  metadata(SARC)[[10]], #grange objects which have genes/ exons added
-                   covprepped = metadata(SARC)[[8]])
+SARC <- setupCNVplot(RE = SARC, namedgranges =  metadata(SARC)[[11]], #grange objects which have genes/ exons added
+                   covprepped = metadata(SARC)[[9]])
 ```
 If CNVs are very small and cannot to attributed to at least one known gene in the TxDB
 object they will be too difficult to process any further. A message
-will state which CNVs were not associated with any genes. These CNVs should be removed from the bed file also as to not cause
+will state which CNVs were not associated with any genes. These CNVs should be removed from the cnv file also as to not cause
 errors.
 
 Each detected CNV can be plotted. Automated plotting can be done quite simply with a for-loop - and is recommended. The samples with the detected CNV is highlighted with a thin purple line. The Sample with the detected CNV, the type of CNV and the value of the CNV from the detection pipeline are pasted as the subtitle. 
 
 ```{r plot CNVs, echo=TRUE, warning=FALSE}
 #Calculate rarity of each suspected CNV - in contrast to other samples
-plotCNV(bed = experiments(SARC)[[3]], setup = metadata(SARC)[[11]],
+plotCNV(cnv = metadata(SARC)[['CNVlist']][[4]],
+        setup = metadata(SARC)[[12]],
         FilteredCNV = 1)
 ```
 
 ## Flagging
+
+Some clinicians would rather the confidence level flagged rather than completely removed - so SARC will not remove any CNVs, and this is left to the user.
 ```{r flag, echo=TRUE, eval = TRUE}
 #Use statistical analyses to flag CNVs as high or low confidence of being true
-SARC <- cnvConfidence(MA = SARC, bed = experiments(SARC)[[3]])
-head(experiments(SARC)[[4]]) %>%
+SARC <- cnvConfidence(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[4]])
+head(metadata(SARC)[['CNVlist']][[5]]) %>%
   kable %>%
   kable_styling("striped", full_width=FALSE) %>%
   scroll_box(width = "800px", height = "200px")
@@ -206,8 +211,8 @@ head(experiments(SARC)[[4]]) %>%
 
 If the MultiAssayExperiment Object is confusing it can be traversed as so.
 ```{r check, echo=TRUE, eval = TRUE}
-#This will show all the dataframes (bed) files made
-#Generally it is recommended to use the most recently made bed file to keep all the additional columns
+#This will show all the dataframes (cnv) files made
+#Generally it is recommended to use the most recently made cnv file to keep all the additional columns
 print(SARC) 
 #This will show all the list objects. Their names should roughly correlate with the names of the parameters in the functions.
 names(metadata(SARC)) 
@@ -217,19 +222,21 @@ Plot distributions to see why some CNVs were false positives. The sample with th
 easily be looped.
 
 ```{r check distribution of reads, echo=TRUE, eval=TRUE}
-SARC <- setQDplot(MA = SARC, meancov = metadata(SARC)[[4]])
-seeDist(meanList = metadata(SARC)[[12]], bed = experiments(SARC)[[4]], 
-        sample = 1, plotly=FALSE)
+SARC <- setQDplot(RE = SARC, meancov = metadata(SARC)[[5]])
+seeDist(meanList = metadata(SARC)[[13]],
+        cnv = metadata(SARC)[['CNVlist']][[5]], 
+        sample = 1,
+        plotly=FALSE)
 ```
 
 Add all genes and exons the CNVs effect. This could be useful to identify if the variant contributes to a patients symptoms.
 
 ```{r exon numbers and gene names, echo=TRUE, eval=TRUE}
-SARC <- pasteExonsGenes(MA = SARC, 
-                        setup =  metadata(SARC)[[11]], #list of dataframes from the setupCNVplot function
-                        bed = experiments(SARC)[[4]]) #bed file to add an extra column to
+SARC <- pasteExonsGenes(RE = SARC, 
+                        setup =  metadata(SARC)[[12]], #list of dataframes from the setupCNVplot function
+                        cnv = metadata(SARC)[['CNVlist']][[5]]) #cnv file to add an extra column to
                       
-experiments(SARC)[[5]] %>%
+metadata(SARC)[['CNVlist']][[6]] %>%
   kable %>%
   kable_styling("striped", full_width=FALSE) %>%
   scroll_box(width = "800px", height = "200px")
@@ -238,32 +245,73 @@ experiments(SARC)[[5]] %>%
 A more powerful test is the Dunnet test. This contrasts the read-depths between the control samples (samples with suspected CNVs) and the test samples (samples without suspected CNVs) at the same region of the DNA. However this is very slow - and it is only recommended when there are few samples (<100) to test.
 
 ```{r dunnet, echo=TRUE, eval = FALSE}
-DNA <- phDunnetonCNV(MA = DNA, bed = experiments(DNA)[[3]], 
-                     anovacov = metadata(DNA)[[7]])
-SARC <- cnvConfidence(MA = SARC, bed = experiments(SARC)[[5]], ph = TRUE)
+DNA <- phDunnetonCNV(RE = DNA, 
+                     cnv = metadata(SARC)[['CNVlist']][[4]], 
+                     anovacov = metadata(SARC)[[8]])
+SARC <- cnvConfidence(MA = SARC, cnv = experiments(SARC)[[7]], ph = TRUE)
 ```
 
-*plotCNV* can also hone into a single *GENE* of interest, so long as it matches the genes found via TxDB, can be made specific for a *BATCH* of WES/ WGS data, or sites where the DNA was sequenced, and be logged. For WES data, logging is reccomneded as across a short region of DNA, the reads can change greatly, based on the chemistry of the sequencer. For deletions, *log* 10 is helpful, for duplications it can actually make them harder to see. Number of samples can also be adjusted for plotting.
+*plotCNV* can also hone into a single *GENE* of interest, so long as it matches the genes found via TxDB, can be made specific for a *BATCH* of WES/ WGS data, or sites where the DNA was sequenced, and be logged. For WES data, logging is rerecorded as across a short region of DNA, the reads can change greatly, based on the chemistry of the sequencer. For deletions, *log* 10 is helpful, for duplications it can actually make them harder to see. Number of samples can also be adjusted for plotting.
 
-The plots can be automated easily in a loop. Trick - make one plot in Rstudio, keep it in the plotting pane, and ajust the height and width. All other plots made in a loop with *ggsave* will be made to the same height and width. Useful when making plots for papers.
+The plots can be automated easily in a loop. Trick - make one plot in Rstudio, keep it in the plotting pane, and adjust the height and width. All other plots made in a loop with *ggsave* will be made to the same height and width. Useful when making plots for papers.
 
 
 ```{r expanded plotCNV, echo=TRUE, eval = FALSE}
-data("test_bed2")
+data("test_cnv2")
 library(ggplot2)
-for (i in seq_len(nrow(test_bed2))) {
-  n <- paste0(bed$SAMPLE[i], "_",
-              bed$GENE[i], "_",
-              bed$CHROM[i], "_",
-              bed$START[i], "_",
-              bed$END[i])
+for (i in seq_len(nrow(test_cnv2))) {
+  n <- paste0(cnv$SAMPLE[i], "_",
+              cnv$GENE[i], "_",
+              cnv$CHROM[i], "_",
+              cnv$START[i], "_",
+              cnv$END[i])
   savename <- paste0(n, ".jpeg")
   print(i)
-  plotCNV(bed = bed, setup =  metadata(X)[[9]], FilteredCNV = i, 
-          batch = bed$BATCH[i], gene = bed$GENE[i])
+  plotCNV(cnv = cnv, setup =  metadata(X)[[9]], FilteredCNV = i, 
+          batch = cnv$BATCH[i], gene = cnv$GENE[i])
   ggplot2::ggsave(filename = savename)
 }
 ```
+
+### Alternate species
+
+Though this tool is designed for clinical work, it can be further applied for research projects which focus on other species. Simply change the txdb and species database. For example, for mouse based projects, follow the following steps.
+
+```{r mouse, eval=TRUE}
+require(TxDb.Mmusculus.UCSC.mm10.knownGene)
+require(Mus.musculus) # load genome specific libraries from BioConductor
+#prepare new objects for the CNV plots to work
+TxDb(Mus.musculus) <- TxDb.Mmusculus.UCSC.mm10.knownGene
+txdb <- TxDb.Mmusculus.UCSC.mm10.knownGene
+tx <- transcriptsBy(Mus.musculus, columns = "SYMBOL")
+txgene <- tx@unlistData
+```
+
+### Obtaining Read Depth
+
+Using bioconductor package `GenomicAlignments` users can read the coverage of bam files. Here we give some examples on how to read bam files into R. Further detail is available in this page. 
+
+```{r read depths, eval=TRUE, message=FALSE}
+require(GenomicAlignments)
+x <- coverage(x = "../inst/extdata/test.bam")
+x$chr1@values
+```
+
+### Normalising by Library size
+
+It is highly recommended to normalize read depth by total library size of the sequencing file for more accurate analysis. Calculating RPM (reads per million)
+is a straight forward method for genomic data. Here is an example using raw read depth and total library sizes. 
+
+```{r CPM, eval=TRUE}
+load(file ="../inst/extdata/test_cov_raw.rda")
+load(file ="../inst/extdata/librarySizes.rda")
+
+for (i in seq_len(nrow(libsizes))) {
+  k <- i + 4
+  test_cov[,k] <- round(test_cov[,k]/libsizes$PerMillion[i],2)
+}
+```
+
 
 ### Session Info
 ```{r session_info, echo=TRUE, eval = TRUE}

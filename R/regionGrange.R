@@ -18,11 +18,13 @@ regionGrange <- function(minicov, range=10, gap=10){
 
   x <- minicov
 
-  chrom <- x$CHROM[1]
+  x <- as.data.frame(x)
 
-  x <- x[which(x$CHROM == chrom),]
+  chrom <- as.character(x$seqnames[1])
 
-  #create grange pameters
+  x <- x[which(x$seqnames == chrom),]
+
+  #create grange parameters
 
   seqGrange <- seq(1, nrow(x), range)
 
@@ -36,9 +38,9 @@ regionGrange <- function(minicov, range=10, gap=10){
 
   for (i in seq_len(nrow(seqGrange))) {
 
-    seqGrange$start[i] <- x$START[seqGrange$start[i]]
+    seqGrange$start[i] <- x$start[seqGrange$start[i]]
 
-    seqGrange$end[i] <- x$END[seqGrange$end[i]]
+    seqGrange$end[i] <- x$end[seqGrange$end[i]]
 
   }
 

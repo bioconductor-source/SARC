@@ -4,14 +4,12 @@
 \alias{plotCovPrep}
 \title{plotCovPrep}
 \usage{
-plotCovPrep(MA, bed, cov, n1 = 0, n2 = 0, startlist, endlist)
+plotCovPrep(RE, cnv, n1 = 0, n2 = 0, startlist, endlist)
 }
 \arguments{
-\item{MA}{MultiAssayExperiment object used to store all information.}
+\item{RE}{MultiAssayExperiment object used to store all information.}
 
-\item{bed}{Bed file containing CNVs for analysis. Must use one which contains at least MeanScore, Qlow, Qhigh and anova p-values. If Post-hoc tests have also been performed, these results can also be used by this function.}
-
-\item{cov}{cov file from WES platform/ sequencer kit or if WGS regular intervals. Stored as a dataframe - genomic locations as rows and samples as columns.}
+\item{cnv}{List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines. Must use one which contains at least MeanScore, Qlow, Qhigh and anova p-values. If Post-hoc tests have also been performed, these results can also be used by this function.}
 
 \item{n1}{How many rows to pad the start site of each CNV - dafault is 0.}
 
@@ -25,23 +23,17 @@ plotCovPrep(MA, bed, cov, n1 = 0, n2 = 0, startlist, endlist)
 A new list of dataframes, each df is a region where a CNV was detected.
 }
 \description{
-plotCovPrep
+Prepares plotting of coverage at specific regions of the DNA - where CNVs have been detected.
 }
 \examples{
-data("test_bed")
+data("test_cnv")
+test_cnv <- test_cnv[c(1:3),]
 data("test_cov")
-SARC <- regionSet(bed = test_bed, cov = test_cov)
-SARC <- regionSplit(MA = SARC, bed = test_bed, cov = test_cov,
-                    startlist = metadata(SARC)[[1]],
-                    endlist = metadata(SARC)[[2]])
-SARC <- regionMean(MA = SARC, bed = test_bed, splitcov = metadata(SARC)[[3]])
-SARC <- regionQuantiles(MA = SARC, bed = experiments(SARC)[[1]],
-                       meancov = metadata(SARC)[[4]], q1=.15, q2=.85)
-SARC <- prepAnova(MA = SARC, bed = experiments(SARC)[[2]], cov = test_cov,
-                 start = metadata(SARC)[[1]], end = metadata(SARC)[[2]])
-SARC <- anovaOnCNV(MA = SARC, bed = experiments(SARC)[[2]],
-                   anovacov = metadata(SARC)[[7]])
-SARC <- plotCovPrep(MA = SARC, bed = experiments(SARC)[[3]], cov = test_cov,
-                    startlist = metadata(SARC)[[1]],
-                    endlist = metadata(SARC)[[2]])
+SARC <- regionSet(cnv = test_cnv, cov = test_cov)
+SARC <- regionSplit(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[1]],
+                    startlist = metadata(SARC)[[2]],
+                    endlist = metadata(SARC)[[3]])
+SARC <- plotCovPrep(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[1]],
+                    startlist = metadata(SARC)[[2]],
+                    endlist = metadata(SARC)[[3]])
 }

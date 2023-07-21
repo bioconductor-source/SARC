@@ -4,18 +4,20 @@
 \alias{phDunnetonCNV}
 \title{phDunnetonCNV}
 \usage{
-phDunnetonCNV(MA, bed, anovacov)
+phDunnetonCNV(RE, cnv, anovacov, nameofnewdf = "CNVdunnet")
 }
 \arguments{
-\item{MA}{MultiAssayExperiment object used to store all information.}
+\item{RE}{RaggedExperiment object used to store all information.}
 
-\item{bed}{CNV bed files stored as dataframes. Chromosomes, Start of CNV, End of CNV, Type of CNV and some other information can be kept here. It is reccomended to use the most recently created bed file. Use print(MA) to check.}
+\item{cnv}{List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines. It is recommended to use the most recently created cnv file. Use print(RE) to check.}
 
 \item{anovacov}{List of dataframes which contain the required information to perform anova for each region with a detected CNV. Generated from prepAnova.}
+
+\item{nameofnewdf}{Name of new dataframe to be saved in metadata(RE)[['CNVlist']]. Default is CNVdunnet.}
 }
 \value{
-A new .bed file with an additional column of the sumlog p-value from each dunnet test performed for the CNV entry.
+A new cnv dataframe with an additional column of the sumlog p-value from each dunnet test performed for the CNV entry.
 }
 \description{
-Applies post-hoc test Dunnet's test on each CNV in the bed file. Performs a pair-wise test between the sample where the CNV was detected and each other sample at the same genomic region. WARNING - very slow, only use if a small number of CNVs / samples are available. Other tests e.g. Quantile Distribution are more effective with larger cohorts.
+Applies post-hoc test Dunnet's test on each CNV in the cnv file. Performs a pair-wise test between the sample where the CNV was detected and each other sample at the same genomic region. WARNING - very slow, only use if a small number of CNVs / samples are available. Other tests e.g. Quantile Distribution are more effective with larger cohorts.
 }

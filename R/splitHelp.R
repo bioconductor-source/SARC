@@ -1,6 +1,6 @@
 #' @title splitHelp
 #'
-#' @description Internal function to aid regionSplit to split the large cov file into multiple smaller cov files - one for each CNV in the bed file.
+#' @description Internal function to aid regionSplit to split the large cov file into multiple smaller cov files - one for each CNV in the cnv file.
 #'
 #' @param cov cov file from WES platform/ sequencer kit or if WGS regular intervals. Stored
 #' as a dataframe - genomic locations as rows and samples as columns.

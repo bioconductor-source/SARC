@@ -4,10 +4,10 @@
 \alias{setupCNVplot}
 \title{setupCNVplot}
 \usage{
-setupCNVplot(MA, namedgranges, covprepped)
+setupCNVplot(RE, namedgranges, covprepped)
 }
 \arguments{
-\item{MA}{MultiAssayExperiment object used to store all information.}
+\item{RE}{RaggedExperiment object used to store all information.}
 
 \item{namedgranges}{List of grange objects, one for each CNV. These objects should have exons and genes, and will be in metadata after being created by SARC::addExonsGenes.}
 
@@ -20,25 +20,33 @@ List of dataframes, each dataframe can be plotted using plotting functions from 
 Sets up dataframes for plotting the CNVs. If there are grange objects with no genes/ exons, it may be the CNVs are too small. These CNVs should be removed to not lead to errors.
 }
 \examples{
-data("test_bed")
-data("test_cov")
-test_bed <- test_bed[c(1),]
-SARC <- regionSet(bed = test_bed, cov = test_cov)
-SARC <- plotCovPrep(MA = SARC, bed = test_bed, cov = test_cov,
-                   startlist = metadata(SARC)[[1]],
-                   endlist = metadata(SARC)[[2]])
-SARC <- regionGrangeMake(MA = SARC, covprepped = metadata(SARC)[[3]])
+if (requireNamespace("TxDb.Hsapiens.UCSC.hg38.knownGene", quietly = TRUE)) {
+require("TxDb.Hsapiens.UCSC.hg38.knownGene")
+} else {}
 
-library(TxDb.Hsapiens.UCSC.hg38.knownGene)
-library(Homo.sapiens)
+if (requireNamespace("Homo.sapiens", quietly = TRUE)) {
+require("Homo.sapiens")
+} else {}
+
+data("test_cnv")
+test_cnv <- test_cnv[c(1),]
+data("test_cov")
+SARC <- regionSet(cnv = test_cnv, cov = test_cov)
+SARC <- regionSplit(RE = SARC, cnv =  metadata(SARC)[['CNVlist']][[1]],
+                    startlist = metadata(SARC)[[2]],
+                    endlist = metadata(SARC)[[3]])
+SARC <- plotCovPrep(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[1]],
+                    startlist = metadata(SARC)[[2]],
+                    endlist = metadata(SARC)[[3]])
+SARC <- regionGrangeMake(RE = SARC, covprepped = metadata(SARC)[[4]])
+
 TxDb(Homo.sapiens) <- TxDb.Hsapiens.UCSC.hg38.knownGene
 txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 tx <- transcriptsBy(Homo.sapiens, columns = "SYMBOL")
 txgene <- tx@unlistData
 
-SARC <- addExonsGenes(MA = SARC, covgranges = metadata(SARC)[[4]],
+SARC <- addExonsGenes(RE = SARC, covgranges = metadata(SARC)[[6]],
                       txdb = txdb, txgene = txgene)
-
-SARC <- setupCNVplot(MA = SARC, namedgranges =  metadata(SARC)[[5]],
-                  covprepped = metadata(SARC)[[3]])
+SARC <- setupCNVplot(RE = SARC, namedgranges =  metadata(SARC)[[7]],
+                  covprepped = metadata(SARC)[[4]])
 }
