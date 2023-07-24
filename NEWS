@@ -3,14 +3,18 @@ note <- sprintf("R package version %s", meta$Version)
 #27.05.23 | V 0.1.0
 #SARC has been created. Submitting to Bioconductor.
 
-#30.05.23 | V 0.1.1
+#30.05.23 | V 0.99.01
 #Tests added
 #setupCNVPlot bug fixed
 #README.md file added
 
-#30.05.23 | V 0.99.01
+#30.06.23 | V 0.99.1
 #RaggedExperiments used instead of MultiAssayExperiments
 #More thorough tests
 #removed bed files
 #added citation of data and data description for where the WES data is from
 #added extra sections in vignette to describe normalisation, how to get coverage from bam files and described mouse samples
+
+#23.07.23 | V 0.99.2
+#updated git and biocredentials for uploads
+
