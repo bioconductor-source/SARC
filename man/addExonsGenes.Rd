@@ -33,7 +33,6 @@ require("Homo.sapiens")
 data("test_cnv")
 test_cnv <- test_cnv[c(1),]
 data("test_cov")
-test_cnv <- test_cnv[c(1),]
 SARC <- regionSet(cnv = test_cnv, cov = test_cov)
 SARC <- plotCovPrep(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[1]],
                    startlist = metadata(SARC)[[2]],

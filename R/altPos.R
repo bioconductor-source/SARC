@@ -4,8 +4,8 @@
 #'
 #' @param start Start site of a CNV.
 #' @param end End site of a CNV.
-#' @param n1 How many rows to pad the start site of each CNV - dafault is 0.
-#' @param n2 How many rows to pad the end site of each CNV - dafault is 0.
+#' @param n1 How many rows to pad the start site of each CNV - default is 0.
+#' @param n2 How many rows to pad the end site of each CNV - default is 0.
 #'
 #' @return Smaller cov files with padded start and end reads.
 #' @noRd

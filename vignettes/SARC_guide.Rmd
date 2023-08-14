@@ -41,7 +41,7 @@ Uniquely, the SARC package only requires a `coverage`/`cov` file and an `cnv` fi
 
 The `cov` file can be created from many BAM files from WES/ WGS, and the read depth coverage of each sample should be normalized by library size of the sample prior to processing. The end of the vignette will point to how to perform read coverage reading and normalisation with examples.
 
-The `cnv` file is in many ways similiar to a standard CNV `BED` file - as it serves as a list of CNVs identified in the samples. Unlike a traditional `BED` file, the `cnv` file should contain additional columns such as CNV value, type of CNV, genes and batch of data. Additionally, the column names of the `cnv` file should ideally include: SAMPLE, CHROM, START, END, TYPE, VALUE. The order of the columns is not necessary. Additional columns such as TOOL, BATCH and GENE can enhance plotting.
+The `cnv` file is in many ways similar to a standard CNV `BED` file - as it serves as a list of CNVs identified in the samples. Unlike a traditional `BED` file, the `cnv` file should contain additional columns such as CNV value, type of CNV, genes and batch of data. Additionally, the column names of the `cnv` file should ideally include: SAMPLE, CHROM, START, END, TYPE, VALUE. The order of the columns is not necessary. Additional columns such as TOOL, BATCH and GENE can enhance plotting.
 
 ### **This is not a detection tool - it is a downstream ratification tool for use AFTER a CNV detection pipeline!**
 
@@ -91,14 +91,14 @@ head(test_cov[, 1:10]) %>%
 
 The SARC package relies on `RaggedExperiments` objects to store the `cov` file as its assay and will store lists of `dataframes` and `Grange` objects within `metadata`. The `SARC` tool will generate more `cnv` dataframes with additional stats for each CNV in the list of CNVs. These `dataframes` will be stored within the first list stored in the `metadata`. 
 
-For cohorts with multiple coverage files (from multiple sequening platforms or meta-analyses studies), we recommend creating multiple `RaggedExperiments` objects, rather than combining them all into one.
+For cohorts with multiple coverage files (from multiple sequencing platforms or meta-analyses studies), we recommend creating multiple `RaggedExperiments` objects, rather than combining them all into one.
 
 ```{r pressure, echo=TRUE}
 #Create a start site and end site for each CNV detected
 SARC <- regionSet(cnv = test_cnv, test_cov)
 
-#Create smaller coverages for each CNV
-SARC <- regionSplit(RE = SARC, #the multiassayexperiment object we made
+#Create smaller coverage files for each CNV
+SARC <- regionSplit(RE = SARC, #the raggedexpression object we made
                     cnv = metadata(SARC)[['CNVlist']][[1]], 
                     startlist = metadata(SARC)[[2]], #list of start sites, per CNV
                     endlist = metadata(SARC)[[3]]) #list of end sites, per CNV
@@ -108,13 +108,13 @@ SARC <- regionSplit(RE = SARC, #the multiassayexperiment object we made
 
 First we use mean scores to check if the mean reads at this region matches the
 CNV values from a CNV detection tool. This will make a new cnv file which will
-be stored in the MAE object.
+be stored in the RE object.
 
 ```{r means, echo=TRUE}
 #Calculate the mean read coverage
 SARC <- regionMean(RE = SARC, 
                    cnv = test_cnv, 
-                   splitcov =  metadata(SARC)[[4]]) #list of cnv specific coverages
+                   splitcov =  metadata(SARC)[[4]]) #list of cnv specific coverage
 ```
 
 We then calculate the quantile distributions. We assume a true duplication will be
@@ -126,7 +126,7 @@ in the COV file - the thresholds should be altered.
 #Calculate the distribution of the mean reads
 SARC <- regionQuantiles(RE = SARC, 
                         cnv = metadata(SARC)[['CNVlist']][[2]], #new cnv file
-                        meancov = metadata(SARC)[[5]], #list of cnv specific coverages + means
+                        meancov = metadata(SARC)[[5]], #list of cnv specific coverage + means
                         q1 = 0.1, #lower threshold
                         q2 = 0.9) #upper threshold
 ```
@@ -156,8 +156,8 @@ A major complaint of CNV analysis by diagnostic staff is the over-reliance on th
 
 ```{r set up plot, echo=TRUE, message=FALSE, warning=FALSE}
 #prepare new objects for the CNV plots to work
-require(TxDb.Hsapiens.UCSC.hg38.knownGene)
-require(Homo.sapiens) #load genome specific libraries from BioConductor
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+library(Homo.sapiens) #load genome specific libraries from BioConductor
 TxDb(Homo.sapiens) <- TxDb.Hsapiens.UCSC.hg38.knownGene
 txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 tx <- transcriptsBy(Homo.sapiens, columns = "SYMBOL")
@@ -209,7 +209,7 @@ head(metadata(SARC)[['CNVlist']][[5]]) %>%
 
 ## Extras
 
-If the MultiAssayExperiment Object is confusing it can be traversed as so.
+If the RaggedExperiment Object is confusing it can be traversed as so.
 ```{r check, echo=TRUE, eval = TRUE}
 #This will show all the dataframes (cnv) files made
 #Generally it is recommended to use the most recently made cnv file to keep all the additional columns
@@ -218,7 +218,7 @@ print(SARC)
 names(metadata(SARC)) 
 ```
 
-Plot distributions to see why some CNVs were false positives. The sample with the suspected CNV will be highlighted in red. In cases where many samples are present, *plotly=TRUE* may lead to a cleaerer visual. *sample* referes to the CNV - so can
+Plot distributions to see why some CNVs were false positives. The sample with the suspected CNV will be highlighted in red. In cases where many samples are present, *plotly=TRUE* may lead to a clearer visual. *sample* refers to the CNV - so can
 easily be looped.
 
 ```{r check distribution of reads, echo=TRUE, eval=TRUE}
@@ -251,7 +251,7 @@ DNA <- phDunnetonCNV(RE = DNA,
 SARC <- cnvConfidence(MA = SARC, cnv = experiments(SARC)[[7]], ph = TRUE)
 ```
 
-*plotCNV* can also hone into a single *GENE* of interest, so long as it matches the genes found via TxDB, can be made specific for a *BATCH* of WES/ WGS data, or sites where the DNA was sequenced, and be logged. For WES data, logging is rerecorded as across a short region of DNA, the reads can change greatly, based on the chemistry of the sequencer. For deletions, *log* 10 is helpful, for duplications it can actually make them harder to see. Number of samples can also be adjusted for plotting.
+*plotCNV* can also hone into a single *GENE* of interest, so long as it matches the genes found via TxDB, can be made specific for a *BATCH* of WES/ WGS data, or sites where the DNA was sequenced, and be logged. For WES data, logging is rerecorded as across a short region of DNA, the reads can change greatly, based on the chemistry of the sequencer. For deletions, *log* 10 is helpful, for duplication's it can actually make them harder to see. Number of samples can also be adjusted for plotting.
 
 The plots can be automated easily in a loop. Trick - make one plot in Rstudio, keep it in the plotting pane, and adjust the height and width. All other plots made in a loop with *ggsave* will be made to the same height and width. Useful when making plots for papers.
 
@@ -293,8 +293,9 @@ Using bioconductor package `GenomicAlignments` users can read the coverage of ba
 
 ```{r read depths, eval=TRUE, message=FALSE}
 require(GenomicAlignments)
-x <- coverage(x = "../inst/extdata/test.bam")
-x$chr1@values
+bam <- system.file("extdata", "test.bam", package="SARC")
+coverage <- coverage(bam)
+coverage$chr1@values
 ```
 
 ### Normalising by Library size
@@ -303,13 +304,11 @@ It is highly recommended to normalize read depth by total library size of the se
 is a straight forward method for genomic data. Here is an example using raw read depth and total library sizes. 
 
 ```{r CPM, eval=TRUE}
-load(file ="../inst/extdata/test_cov_raw.rda")
-load(file ="../inst/extdata/librarySizes.rda")
+load(system.file("extdata", "test_cov_raw.rda", package="SARC"))
+load(system.file("extdata", "librarySizes.rda", package="SARC"))
 
-for (i in seq_len(nrow(libsizes))) {
-  k <- i + 4
-  test_cov[,k] <- round(test_cov[,k]/libsizes$PerMillion[i],2)
-}
+normalised_counts <- t(t(test_cov[, 5:ncol(test_cov)]) / libsizes$PerMillion)
+normalised_counts <- cbind(test_cov[,1:4], normalised_counts)
 ```
 
 
