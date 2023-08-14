@@ -5,7 +5,7 @@
 #' @param RE RaggedExperiment object used to store all information.
 #' @param setup List of dataframes which have been processed for plotting. This will be stored as metadata in the RE object after SARC::setupCNVPlot.
 #' @param cnv cnv file containing CNVs which the user wishes to generate plots for. It is recommended that the most recently created cnv file is used. Check print(RE) to see more cnv files created by SARC.
-#' @param nameofnewdf Name of new dataframe to be saved in metadata(RE)[['CNVlist']]. Default is cnvExonsGenes.
+#' @param nameofnewdf Name of new dataframe to be saved in metadata(RE)[['CNVlist']]. Default is CNVexonsgenes
 #'
 #' @return A new cnv file with an additional column which lists the genes and exons which the detected variant ranges.
 #' @export
@@ -43,7 +43,7 @@
 #' SARC <- pasteExonsGenes(RE = SARC, setup =  metadata(SARC)[[8]],
 #'                        cnv = metadata(SARC)[['CNVlist']][[1]])
 #'
-pasteExonsGenes <- function(RE, setup, cnv, nameofnewdf="cnvExonsGenes"){
+pasteExonsGenes <- function(RE, setup, cnv, nameofnewdf="CNVexonsgenes"){
 
   if (missing(RE)) stop('RE is missing. Add a RaggedExperiment object to store data efficiently.')
 

@@ -1,8 +1,8 @@
 #' applyDunnet
 #'
-#' @description Internal function used to calculate the dunnet scores for each CNV found. Dunnet is a powerful but slow post-hoc test. It is recomended when there are fewer than 100 samples in the COV file, and less than 100 CNVs to test.
+#' @description Internal function used to calculate the dunnet scores for each CNV found. Dunnet is a powerful but slow post-hoc test. It is recommended when there are fewer than 100 samples in the COV file, and less than 100 CNVs to test.
 #'
-#' @param preppedcov List of dataframes, each df is a prepped anova df for each region where a CNV was detected. Should be in the MA object as metadata, after the prepAnova function.
+#' @param preppedcov List of dataframes, each dataframe is a prepped anova dataframe for each region where a CNV was detected. Should be in the MA object as metadata, after the prepAnova function.
 #' @param control Single Sample where the CNV was detected. Will be used as control for pairwise tests. This is automatically performed by phDunnetonCNV as a loop.
 #'
 #' @noRd

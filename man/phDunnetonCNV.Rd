@@ -19,5 +19,5 @@ phDunnetonCNV(RE, cnv, anovacov, nameofnewdf = "CNVdunnet")
 A new cnv dataframe with an additional column of the sumlog p-value from each dunnet test performed for the CNV entry.
 }
 \description{
-Applies post-hoc test Dunnet's test on each CNV in the cnv file. Performs a pair-wise test between the sample where the CNV was detected and each other sample at the same genomic region. WARNING - very slow, only use if a small number of CNVs / samples are available. Other tests e.g. Quantile Distribution are more effective with larger cohorts.
+Applies post-hoc test Dunnet test on each CNV in the cnv file. Performs a pair-wise test between the sample where the CNV was detected and each other sample at the same genomic region. WARNING - very slow, only use if a small number of CNVs / samples are available. Other tests e.g. Quantile Distribution are more effective with larger cohorts.
 }
