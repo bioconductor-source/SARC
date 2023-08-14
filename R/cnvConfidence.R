@@ -4,12 +4,11 @@
 #'
 #' @param RE RaggedExperiment object used to store all information.
 #' @param cnv List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines. Must use one which contains at least MeanScore, Qlow, Qhigh and anova p-values. If Post-hoc tests have also been performed, these results can also be used by this function.
-#' @param ph If Dunnet tests was  performed, the p-value from the tests can be taken into account. Default is FALSE.
+#' @param ph If Dunnet tests were also performed, the p-value from the tests can be taken into account. Default is FALSE.
 #' @param m1 Value used to cut-off the highest mean score allowed for HOMOZYGOUS DELECTIONS, and lowest cut-off for HETEROZYGOUS DELETIONS. Default is 0.2.
 #' @param m2 Value used to cut-off the highest mean score allowed for HETEROZYGOUS DELETINS. Default is 0.8.
 #' @param m3 Value used to cut-off the lowest mean score allowed for HETEROZYGOUS DUPLICATIONS. Default is 1.2.
 #' @param m4 Value used to cut-off the lowest mean score allowed for HETEROZYGOUS DUPLICATIONS. Default is 1.8.
-#' @param nameofnewdf Name of new dataframe to be saved in metadata(RE)[['CNVlist']]. Default is CNVrank.
 #'
 #' @return A new cnv file with additional columns which describe our level of confidence of the detected CNV being a true CNV.
 #' @export
@@ -31,7 +30,7 @@
 #' SARC <- anovaOnCNV(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[3]],
 #'                   anovacov = metadata(SARC)[[8]])
 #' SARC <- cnvConfidence(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[4]])
-cnvConfidence <- function(RE, cnv, ph=FALSE, m1=0.2, m2=0.8, m3=1.2, m4=1.8, nameofnewdf="CNVrank"){
+cnvConfidence <- function(RE, cnv, ph=FALSE, m1=0.2, m2=0.8, m3=1.2, m4=1.8){
 
   if (missing(RE)) stop('RE is missing. Add a RaggedExperiment object to store data efficiently.')
 
@@ -116,7 +115,7 @@ cnvConfidence <- function(RE, cnv, ph=FALSE, m1=0.2, m2=0.8, m3=1.2, m4=1.8, nam
 
   #add df to RE object
 
-  metadata(RE)[["CNVlist"]][[nameofnewdf]] <- x
+  metadata(RE)[["CNVlist"]][["CNVclass"]] <- x
 
   #return RE object
 

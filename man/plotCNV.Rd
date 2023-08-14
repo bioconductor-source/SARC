@@ -16,7 +16,7 @@ plotCNV(
 )
 }
 \arguments{
-\item{cnv}{List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines. It is recommended to use the most recently generated cnv file. Check print(RE) to see if cnv files from other analyses have been generated.}
+\item{cnv}{List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines. It is recomended to use the most recently generated cnv file. Check print(RE) to see if cnv files from other anlyses have been generated.}
 
 \item{setup}{ist of dataframes which have been processed for plotting. This will be stored as metadata in the RE object after SARC::setupCNVPlot.}
 
@@ -48,7 +48,7 @@ require("Homo.sapiens")
 } else {}
 
 data("test_cnv")
-test_cnv <- test_cnv[c(1),]
+test_cnv <- test_cnv[c(1:3),]
 data("test_cov")
 SARC <- regionSet(cnv = test_cnv, cov = test_cov)
 SARC <- regionSplit(RE = SARC, cnv =  metadata(SARC)[['CNVlist']][[1]],

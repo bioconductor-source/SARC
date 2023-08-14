@@ -1,5 +1,7 @@
 #test stats
 #this script will test the stats performed on the first CNV are as expected
+
+library(SARC)
 library(testthat)
 
 data("test_cnv")

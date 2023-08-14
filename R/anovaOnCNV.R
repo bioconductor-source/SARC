@@ -49,7 +49,7 @@ anovaOnCNV <- function(RE, cnv, anovacov, nameofnewdf="CNVanova"){
   #store new dataframe in the RE object
   metadata(RE)[["CNVlist"]][[nameofnewdf]] <- cnv
 
-  #return RE object
+  #return MA object
 
   return(RE)
 

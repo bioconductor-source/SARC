@@ -18,10 +18,3 @@ note <- sprintf("R package version %s", meta$Version)
 #23.07.23 | V 0.99.2
 #updated git and biocredentials for uploads
 
-
-#14.08.23 | V 0.99.23
-#Fixed bug from regionSet where the incorrect CNV start and end lengths were called and added new test to check this
-#Solved spelling errors in vignette
-#Replaces require calls to library calls in the vignette
-#Replaced for-loop and error causing extdata loads with better code to increase speed and not cause errors respectively
-

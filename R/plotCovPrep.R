@@ -2,10 +2,10 @@
 #'
 #' @description Prepares plotting of coverage at specific regions of the DNA - where CNVs have been detected.
 #'
-#' @param RE RaggedExperiment object used to store all information.
+#' @param RE MultiAssayExperiment object used to store all information.
 #' @param cnv List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines. Must use one which contains at least MeanScore, Qlow, Qhigh and anova p-values. If Post-hoc tests have also been performed, these results can also be used by this function.
-#' @param n1 How many rows to pad the start site of each CNV - default is 0.
-#' @param n2 How many rows to pad the end site of each CNV - default is 0.
+#' @param n1 How many rows to pad the start site of each CNV - dafault is 0.
+#' @param n2 How many rows to pad the end site of each CNV - dafault is 0.
 #' @param startlist List of start sites created from SARC::regionSet and stored as metadata.
 #' @param endlist List of end sites created from SARC::regionSet and stored as metadata.
 #'

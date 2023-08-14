@@ -19,7 +19,7 @@ addExonsGenes(RE, covgranges, txdb, txgene)
 A list of grange objects with exons and genes added. One grange object for each detected CNV. Will be stored in the RE object provided as metadata.
 }
 \description{
-For the length of the CNV (+padding, if this was done), exons and gene symbol information will be attached in each Grange object.
+For the length of the CNV (+padding, if this was done), exons and gene symbol inforREtion will be attached in each Grange object.
 }
 \examples{
 if (requireNamespace("TxDb.Hsapiens.UCSC.hg38.knownGene", quietly = TRUE)) {
@@ -33,6 +33,7 @@ require("Homo.sapiens")
 data("test_cnv")
 test_cnv <- test_cnv[c(1),]
 data("test_cov")
+test_cnv <- test_cnv[c(1),]
 SARC <- regionSet(cnv = test_cnv, cov = test_cov)
 SARC <- plotCovPrep(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[1]],
                    startlist = metadata(SARC)[[2]],

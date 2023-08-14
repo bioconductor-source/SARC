@@ -3,7 +3,7 @@
 #' @description Plots of the region of the DNA from several samples where a CNV is detected. The sample with the detected CNV, from the cnv file, will be highlighted in purple. Additional specificity such as gene of interest, or batch of WES/ WGS can be specified. This function is made to be easily looped for multiple CNVs. It is also made as a quick and more visually preferable alternative to looking for true CNVs visually.
 #'
 #'
-#' @param cnv List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines. It is recommended to use the most recently generated cnv file. Check print(RE) to see if cnv files from other analyses have been generated.
+#' @param cnv List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines. It is recomended to use the most recently generated cnv file. Check print(RE) to see if cnv files from other anlyses have been generated.
 #' @param setup ist of dataframes which have been processed for plotting. This will be stored as metadata in the RE object after SARC::setupCNVPlot.
 #' @param FilteredCNV Which CNV from the list of dataframes (setup) should be plotted. Can be automated within a for-loop. Default is 1.
 #' @param batch If WES/ WGS was performed in batches, users may wish to plot samples from different batches separately. In this case, a column called 'BATCH' should be found in the cnv file. Different batches should be labelled with differentiating strings, and this string should be added to the batch parameter. Default is NULL.
@@ -26,7 +26,7 @@
 #' } else {}
 #'
 #' data("test_cnv")
-#' test_cnv <- test_cnv[c(1),]
+#' test_cnv <- test_cnv[c(1:3),]
 #' data("test_cov")
 #' SARC <- regionSet(cnv = test_cnv, cov = test_cov)
 #' SARC <- regionSplit(RE = SARC, cnv =  metadata(SARC)[['CNVlist']][[1]],
@@ -214,7 +214,7 @@ plotCNV <- function(cnv, setup, FilteredCNV=1, batch=NULL,
 
                                        vjust = 6, hjust = 1))
 
-  #return plot
+  #retirm plot
 
   return(p)
 }

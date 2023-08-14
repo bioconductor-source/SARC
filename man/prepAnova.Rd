@@ -19,7 +19,7 @@ prepAnova(RE, cnv, startlist, endlist)
 Additional list of dataframes which will be needed to calculate anova for each region with a detected CNV.
 }
 \description{
-Function for annovaOnCNV.This function sets up samples for anova analysis. Can also be used as input for Dunnet analysis.
+Function for annovaOnCNV.This function sets up samples for anova analysis. Can also be used as input for dunnet analysis.
 }
 \examples{
 data("test_cnv")

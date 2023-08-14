@@ -1,6 +1,6 @@
 #' prepAnova
 #'
-#' @description Function for annovaOnCNV.This function sets up samples for anova analysis. Can also be used as input for Dunnet analysis.
+#' @description Function for annovaOnCNV.This function sets up samples for anova analysis. Can also be used as input for dunnet analysis.
 #'
 #' @param RE RaggedExperiment object used to store all information.
 #' @param cnv List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines. It is recommended that the most recently created cnv file is used. Check print(RE) to see more cnv files created by SARC.
