@@ -1,6 +1,6 @@
 #' addExonsGenes
 #'
-#' @description For the length of the CNV (+padding, if this was done), exons and gene symbol inforREtion will be attached in each Grange object.
+#' @description For the length of the CNV (+padding, if this was done), exons and gene symbol information will be attached in each Grange object.
 #'
 #' @param RE RaggedExperiment object used to store all information.
 #' @param covgranges List of grange objects created by the SARC::regionGrangeMake function. This should be found in the metadata of the RE object.
@@ -24,7 +24,6 @@
 #' data("test_cnv")
 #' test_cnv <- test_cnv[c(1),]
 #' data("test_cov")
-#' test_cnv <- test_cnv[c(1),]
 #' SARC <- regionSet(cnv = test_cnv, cov = test_cov)
 #' SARC <- plotCovPrep(RE = SARC, cnv = metadata(SARC)[['CNVlist']][[1]],
 #'                    startlist = metadata(SARC)[[2]],
@@ -76,7 +75,7 @@ addExonsGenes <- function(RE, covgranges, txdb, txgene){
 
   metadata(RE)[["NAMEDGRANGES"]] <- newRange
 
-  #return RE.
+  #return RE
 
   return(RE)
 

@@ -1,6 +1,6 @@
 #' phDunnetonCNV
 #'
-#' @description Applies post-hoc test Dunnet's test on each CNV in the cnv file. Performs a pair-wise test between the sample where the CNV was detected and each other sample at the same genomic region. WARNING - very slow, only use if a small number of CNVs / samples are available. Other tests e.g. Quantile Distribution are more effective with larger cohorts.
+#' @description Applies post-hoc test Dunnet test on each CNV in the cnv file. Performs a pair-wise test between the sample where the CNV was detected and each other sample at the same genomic region. WARNING - very slow, only use if a small number of CNVs / samples are available. Other tests e.g. Quantile Distribution are more effective with larger cohorts.
 #'
 #' @param RE RaggedExperiment object used to store all information.
 #' @param cnv  List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines. It is recommended to use the most recently created cnv file. Use print(RE) to check.

@@ -4,14 +4,23 @@
 \alias{cnvConfidence}
 \title{cnvConfidence}
 \usage{
-cnvConfidence(RE, cnv, ph = FALSE, m1 = 0.2, m2 = 0.8, m3 = 1.2, m4 = 1.8)
+cnvConfidence(
+  RE,
+  cnv,
+  ph = FALSE,
+  m1 = 0.2,
+  m2 = 0.8,
+  m3 = 1.2,
+  m4 = 1.8,
+  nameofnewdf = "CNVrank"
+)
 }
 \arguments{
 \item{RE}{RaggedExperiment object used to store all information.}
 
 \item{cnv}{List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines. Must use one which contains at least MeanScore, Qlow, Qhigh and anova p-values. If Post-hoc tests have also been performed, these results can also be used by this function.}
 
-\item{ph}{If Dunnet tests were also performed, the p-value from the tests can be taken into account. Default is FALSE.}
+\item{ph}{If Dunnet tests was  performed, the p-value from the tests can be taken into account. Default is FALSE.}
 
 \item{m1}{Value used to cut-off the highest mean score allowed for HOMOZYGOUS DELECTIONS, and lowest cut-off for HETEROZYGOUS DELETIONS. Default is 0.2.}
 
@@ -20,6 +29,8 @@ cnvConfidence(RE, cnv, ph = FALSE, m1 = 0.2, m2 = 0.8, m3 = 1.2, m4 = 1.8)
 \item{m3}{Value used to cut-off the lowest mean score allowed for HETEROZYGOUS DUPLICATIONS. Default is 1.2.}
 
 \item{m4}{Value used to cut-off the lowest mean score allowed for HETEROZYGOUS DUPLICATIONS. Default is 1.8.}
+
+\item{nameofnewdf}{Name of new dataframe to be saved in metadata(RE)[['CNVlist']]. Default is CNVrank.}
 }
 \value{
 A new cnv file with additional columns which describe our level of confidence of the detected CNV being a true CNV.
