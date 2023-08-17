@@ -41,11 +41,17 @@ regionSet <- function(cnv, cov, col = "experiment"){
 
   end.mini <- vector()
 
+  #convert to df to keep row indexes for splicing
+
+  x <- as.data.frame(ragexp@assays@unlistData)
+  x <- cbind(rownames(x), x)
+  colnames(x)[1] <- "ID"
+
   for (i in seq_len(nrow(cnv))) {
 
     #Break cov into chromosomes - for speed
 
-    cov.mini[[i]] <- ragexp@assays@unlistData[seqnames(ragexp@assays@unlistData) == cnv$CHROM[i]]
+    cov.mini[[i]] <- x[x$seqnames == cnv$CHROM[i],]
 
     #Make iteration objects
 
@@ -56,15 +62,18 @@ regionSet <- function(cnv, cov, col = "experiment"){
     e <- cnv$END[i]
 
     #Get ith START from cov
-    s.min <- which.min(abs(start(c@ranges)-s))
-
-    start.mini[i] <- s.min
+    s.min <- which.min(abs(c$start-s))
+    s.min.id <- as.numeric(c$ID[s.min])
+    start.mini[i] <- s.min.id
 
     #Get ith END from cov
-    e.min <- which.min(abs(end(c@ranges)-e))
-
-    end.mini[i] <- e.min
+    e.min <- which.min(abs(c$end-e))
+    e.min.id <-  as.numeric(c$ID[e.min])
+    end.mini[i] <- e.min.id
   }
+
+  s.min <- which.min(abs(c$start-s))
+  s.min.id <- as.numeric(c$ID[s.min])
 
   #create list to keep cnv dataframes
   cnvlist <- list()

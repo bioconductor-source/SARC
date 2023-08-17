@@ -7,13 +7,13 @@
 plotCovPrep(RE, cnv, n1 = 0, n2 = 0, startlist, endlist)
 }
 \arguments{
-\item{RE}{MultiAssayExperiment object used to store all information.}
+\item{RE}{RaggedExperiment object used to store all information.}
 
 \item{cnv}{List of CNVs in a dataframe containing CNVs from detection algorithms/ pipelines. Must use one which contains at least MeanScore, Qlow, Qhigh and anova p-values. If Post-hoc tests have also been performed, these results can also be used by this function.}
 
-\item{n1}{How many rows to pad the start site of each CNV - dafault is 0.}
+\item{n1}{How many rows to pad the start site of each CNV - default is 0.}
 
-\item{n2}{How many rows to pad the end site of each CNV - dafault is 0.}
+\item{n2}{How many rows to pad the end site of each CNV - default is 0.}
 
 \item{startlist}{List of start sites created from SARC::regionSet and stored as metadata.}
 

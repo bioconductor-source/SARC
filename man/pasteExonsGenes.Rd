@@ -4,7 +4,7 @@
 \alias{pasteExonsGenes}
 \title{pasteExonsGenes}
 \usage{
-pasteExonsGenes(RE, setup, cnv, nameofnewdf = "cnvExonsGenes")
+pasteExonsGenes(RE, setup, cnv, nameofnewdf = "CNVexonsgenes")
 }
 \arguments{
 \item{RE}{RaggedExperiment object used to store all information.}
@@ -13,7 +13,7 @@ pasteExonsGenes(RE, setup, cnv, nameofnewdf = "cnvExonsGenes")
 
 \item{cnv}{cnv file containing CNVs which the user wishes to generate plots for. It is recommended that the most recently created cnv file is used. Check print(RE) to see more cnv files created by SARC.}
 
-\item{nameofnewdf}{Name of new dataframe to be saved in metadata(RE)[['CNVlist']]. Default is cnvExonsGenes.}
+\item{nameofnewdf}{Name of new dataframe to be saved in metadata(RE)[['CNVlist']]. Default is CNVexonsgenes.}
 }
 \value{
 A new cnv file with an additional column which lists the genes and exons which the detected variant ranges.

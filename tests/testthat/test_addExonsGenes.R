@@ -1,6 +1,5 @@
 #this script will test the addition of exons and genes to Grange objects
 #this is a vital part of
-library(SARC)
 library(testthat)
 data("test_cnv")
 data("test_cov")
@@ -31,8 +30,13 @@ SARC <- regionGrangeMake(RE = SARC, covprepped = metadata(SARC)[[4]])
 #test the nesting of GRange objects
 expect_equal(class(metadata(SARC)[[5]][[1]][[1]])[1], "GRanges")
 
-library(TxDb.Hsapiens.UCSC.hg38.knownGene)
-library(Homo.sapiens)
+if (requireNamespace("TxDb.Hsapiens.UCSC.hg38.knownGene", quietly = TRUE)) {
+require("TxDb.Hsapiens.UCSC.hg38.knownGene")
+} else {}
+
+if (requireNamespace("Homo.sapiens", quietly = TRUE)) {
+require("Homo.sapiens")
+} else {}
 
 txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 TxDb(Homo.sapiens) <- TxDb.Hsapiens.UCSC.hg38.knownGene
@@ -47,5 +51,6 @@ expect_equal(names(metadata(SARC)[[6]][[1]]), names(metadata(SARC)[[5]][[1]]))
 #check FCGR2A is the gene for the first CNV
 x <- metadata(SARC)[[6]][[1]][[1]]
 expect_equal(x$SYMBOL[[1]],"FCGR2A")
+
 #save for plotting tests - will be hashed out
 #saveRDS(SARC, file = "tests/testthat/test1.rds")
