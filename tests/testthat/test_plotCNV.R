@@ -4,7 +4,7 @@ library(testthat)
 data("test_cnv")
 
 test_cnv <- test_cnv[c(1),]
-SARC <- readRDS("test1.rds")
+SARC <- readRDS("tests/testthat/test1.rds")
 
 #setuplot
 SARC <- setupCNVplot(RE = SARC, namedgranges = metadata(SARC)[[6]],
